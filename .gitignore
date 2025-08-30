@@ -1,0 +1,14 @@
+*.pyc
+__pycache__/
+*.log
+*.sqlite3
+*.db
+*.pot
+*.mo
+*.tmp
+*.bak
+*.swp
+*.zip
+*.egg-info/
+.odoo/
+.env

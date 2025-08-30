@@ -1,0 +1,55 @@
+<odoo>
+    <data>
+        <!-- Kanban view -->
+        <record id="view_employee_type_kanban" model="ir.ui.view">
+            <field name="name">employee.type.kanban</field>
+            <field name="model">employee.type</field>
+            <field name="arch" type="xml">
+                <kanban class="o_kanban_example">
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="employee_count"/>
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="oe_kanban_global_click">
+                                <strong><field name="name"/></strong>
+                                <div>Mã: <field name="code"/></div>
+                                <div class="mt-2">
+                                    <button type="object"
+                                            name="action_view_employees"
+                                            class="btn btn-primary btn-sm">
+                                        <field name="employee_count" widget="statinfo"/>
+                                    </button>
+                                </div>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- Form view -->
+        <record id="view_employee_type_form" model="ir.ui.view">
+            <field name="name">employee.type.form</field>
+            <field name="model">employee.type</field>
+            <field name="arch" type="xml">
+                <form string="Loại nhân viên">
+                    <sheet>
+                        <group>
+                            <field name="name"/>
+                            <field name="code"/>
+                        </group>
+                        <div class="oe_button_box" name="button_box">
+                            <button type="object"
+                                    name="action_view_employees"
+                                    class="oe_stat_button"
+                                    icon="fa-users">
+                                <field name="employee_count" widget="statinfo"/>
+                            </button>
+                        </div>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,85 @@
+<odoo>
+    <data>
+
+        <!-- ACTION -->
+        <record id="action_offer_letters" model="ir.actions.act_window">
+            <field name="name">Offer Letter</field>
+            <field name="res_model">forher.offer.letter</field>
+            <field name="view_mode">kanban,form</field>
+        </record>
+
+        <!-- MENU -->
+        <menuitem id="menu_offer_letters" name="Offer Letter"
+                  parent="menu_forher_root"
+                  action="action_offer_letters"/>
+
+        <!-- KANBAN VIEW -->
+        <record id="view_offer_letter_kanban" model="ir.ui.view">
+            <field name="name">offer.letter.kanban</field>
+            <field name="model">forher.offer.letter</field>
+            <field name="arch" type="xml">
+                <kanban>
+                    <field name="applicant_id"/>
+                    <field name="position"/>
+                    <field name="email"/>
+                    <field name="phone"/>
+                    <field name="state_label"/>
+
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="o_kanban_record p-2 border rounded mb-1">
+                                <strong>
+                                    <t t-esc="record.applicant_id &amp;&amp; record.applicant_id.value ? record.applicant_id.value.display_name : ''"/>
+                                </strong>
+                                <div>Vị trí: <t t-esc="record.position &amp;&amp; record.position.value || ''"/></div>
+                                <div>Email: <t t-esc="record.email &amp;&amp; record.email.value || ''"/></div>
+                                <div>SĐT: <t t-esc="record.phone &amp;&amp; record.phone.value || ''"/></div>
+
+                                
+
+                                <!-- State Label -->
+                                <small class="d-block mt-1 text-muted">
+                                    <t t-esc="record.state_label &amp;&amp; record.state_label.value || ''"/>
+                                </small>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- FORM VIEW -->
+        <record id="view_offer_letter_form" model="ir.ui.view">
+            <field name="name">offer.letter.form</field>
+            <field name="model">forher.offer.letter</field>
+            <field name="arch" type="xml">
+                <form string="Offer Letter">
+                    <sheet>
+                        <group>
+                            <field name="applicant_id"/>
+                            <field name="position"/>
+                            <field name="email"/>
+                            <field name="phone"/>
+                            <field name="notes"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- EMAIL TEMPLATE -->
+        <record id="email_template_offer" model="mail.template">
+            <field name="name">Offer Email</field>
+            <field name="model_id" ref="model_forher_offer_letter"/>
+            <field name="subject">Offer từ Forher</field>
+            <field name="email_from">${(user.email_formatted || '')}</field>
+            <field name="email_to">${object.applicant_id.email || ''}</field>
+            <field name="body_html"><![CDATA[
+                <p>Xin chào ${object.applicant_id.name || ''},</p>
+                <p>Chúng tôi vui mừng gửi offer cho vị trí ${object.position || ''}.</p>
+                <p>Chi tiết sẽ được liên hệ trực tiếp.</p>
+            ]]></field>
+        </record>
+
+    </data>
+</odoo>

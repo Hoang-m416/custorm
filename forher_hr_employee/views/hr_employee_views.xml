@@ -1,0 +1,96 @@
+<odoo>
+    <data>
+        <!-- ================= Form view HR Employee nâng cao ================= -->
+        <record id="view_hr_employee_form_custom" model="ir.ui.view">
+            <field name="name">hr.employee.form.custom</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="arch" type="xml">
+
+                <!-- Header với statusbar -->
+                <header>
+                    <field name="state" widget="statusbar" 
+                           statusbar_visible="active,suspended,resigned"
+                           options="{'clickable': True}"
+                           groups="forher_company_overview.forher_group_board,
+                                   forher_company_overview.forher_group_branch_manager,
+                                   base.group_system"/>
+                </header>
+                
+                <!-- Ẩn department -->
+                <xpath expr="//field[@name='department_id']" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <!-- Thêm company_id ngay trước vị trí cũ của department -->
+                <xpath expr="//field[@name='department_id']" position="after">
+                    <field name="company_id"/>
+                </xpath>
+
+                <!-- Ẩn tất cả các page mặc định -->
+                <xpath expr="//notebook/page" position="attributes">
+                    <attribute name="invisible">1</attribute>
+                </xpath>
+
+                <!-- Giữ lại page Settings -->
+                <xpath expr="//notebook/page[@name='hr_settings']" position="attributes">
+                    <attribute name="invisible">0</attribute>
+                </xpath>
+
+                <!-- Đưa page "Thông tin cá nhân & hợp đồng" lên trước -->
+                <xpath expr="//notebook" position="inside">
+                    <page string="Thông tin cá nhân &amp; hợp đồng" sequence="1">
+                        <group string="Thông tin cá nhân">
+                            <field name="dob"/>
+                            <field name="gender"/>
+                            <field name="identity_id"/>
+                            <field name="address"/>
+                            <field name="work_phone"/>
+                            <field name="email_personal"/>
+                        </group>
+
+                        <group string="Thông tin công việc">
+                            <field name="job_title"/>
+                            <field name="position"/>
+                            <field name="state" readonly="1"/>
+                            <field name="employee_type_id"/>
+                        </group>
+
+                        <group string="Thông tin hợp đồng">
+                            <field name="contract_type"/>
+                            <field name="contract_start"/>
+                            <field name="contract_end"/>
+                            <field name="salary"/>
+                        </group>
+
+                        <group string="Thông tin ngân hàng">
+                            <field name="bank_account"/>
+                            <field name="bank_name"/>
+                        </group>
+                    </page>
+
+                    <!-- Page "Hồ sơ nhân viên" lên ngay sau thông tin cá nhân -->
+                    <page string="Hồ sơ nhân viên" sequence="2">
+                        <field name="hr_employee_document_ids">
+                            <list editable="bottom">
+                                <field name="name"/>
+                                <field name="document_type"/>
+                                <field name="file" filename="filename"/>
+                                <field name="upload_date"/>
+                            </list>
+                            <form string="Hồ sơ nhân viên">
+                                <group>
+                                    <field name="name"/>
+                                    <field name="document_type"/>
+                                    <field name="file" filename="filename"/>
+                                    <field name="upload_date"/>
+                                </group>
+                            </form>
+                        </field>
+                    </page>
+                </xpath>
+
+            </field>
+        </record>
+    </data>
+</odoo>

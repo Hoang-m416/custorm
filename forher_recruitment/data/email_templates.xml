@@ -1,0 +1,49 @@
+<odoo>
+    <record id="email_template_offer_letter" model="mail.template">
+        <field name="name">Offer Email</field>
+        <field name="model_id" ref="forher_recruitment.model_forher_offer_letter"/>
+        <field name="subject">Offer từ Forher</field>
+        <field name="email_from">${(user.email_formatted || '')}</field>
+        <field name="email_to">${object.email}</field>
+        <field name="body_html"><![CDATA[
+            <div style="font-family:Arial,sans-serif; line-height:1.6; font-size:14px; color:#333;">
+                <p>Xin chào <strong>${object.applicant_id.name}</strong>,</p>
+
+                <p>Chúng tôi vui mừng thông báo rằng bạn đã được chọn cho vị trí 
+                    <strong>${object.position}</strong> tại công ty <b>Forher</b>.
+                </p>
+
+                <h3>📄 Chi tiết Offer:</h3>
+                <ul>
+                    <li><b>Ứng viên:</b> ${object.applicant_id.name}</li>
+                    <li><b>Vị trí:</b> ${object.position}</li>
+                    <li><b>Email:</b> ${object.applicant_id.email}</li>
+                    <li><b>Số điện thoại:</b> ${object.applicant_id.phone or 'N/A'}</li>
+                </ul>
+
+                <p>Chúng tôi rất mong nhận được phản hồi từ bạn. Vui lòng chọn một trong hai lựa chọn sau:</p>
+
+                <div style="margin:20px 0;">
+                    <a href="${object.get_base_url()}/offer/confirm/${object.id}/${object.confirm_token}?decision=accept"
+                       style="background-color:#28a745;color:#fff;padding:12px 20px;text-decoration:none;border-radius:5px;display:inline-block;margin-right:10px;">
+                       ✅ Đồng ý Offer
+                    </a>
+                    
+                    <a href="${object.get_base_url()}/offer/confirm/${object.id}/${object.confirm_token}?decision=reject"
+                       style="background-color:#dc3545;color:#fff;padding:12px 20px;text-decoration:none;border-radius:5px;display:inline-block;">
+                       ❌ Từ chối Offer
+                    </a>
+                </div>
+
+                <p>Nếu bạn gặp vấn đề khi nhấn vào nút, vui lòng copy và dán các đường link sau vào trình duyệt:</p>
+                <ul>
+                    <li>Đồng ý: ${object.get_base_url()}/offer/confirm/${object.id}/${object.confirm_token}?decision=accept</li>
+                    <li>Từ chối: ${object.get_base_url()}/offer/confirm/${object.id}/${object.confirm_token}?decision=reject</li>
+                </ul>
+
+                <p>Trân trọng,<br/>
+                   Phòng Nhân sự - Forher</p>
+            </div>
+        ]]></field>
+    </record>
+</odoo>

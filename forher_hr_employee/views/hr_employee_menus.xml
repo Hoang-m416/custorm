@@ -1,0 +1,43 @@
+<odoo>
+    <data noupdate="0">
+
+        <!-- ================= Action Company ================= -->
+        <record id="action_forher_company_kanban" model="ir.actions.act_window">
+            <field name="name">Company</field>
+            <field name="res_model">res.company</field>
+            <field name="view_mode">kanban,form</field>
+            <field name="view_id" ref="view_forher_company_kanban"/>
+        </record>
+
+        <!-- Action Loại nhân viên -->
+        <record id="action_employee_type" model="ir.actions.act_window">
+            <field name="name">Loại nhân viên</field>
+            <field name="res_model">employee.type</field>
+            <field name="view_mode">kanban,form</field>
+            <field name="view_id" ref="view_employee_type_kanban"/>
+        </record>
+
+        <!-- ================= Menu gốc ================= -->
+        <record id="hr.menu_hr_root" model="ir.ui.menu">
+            <field name="name">Nhân sự Forher</field>
+            <field name="sequence">11</field>
+        </record>
+
+        <!-- Menu Company -->
+        <record id="forher_hr_menu_company" model="ir.ui.menu">
+            <field name="name">Company</field>
+            <field name="parent_id" ref="hr.menu_hr_root"/>
+            <field name="action" ref="action_forher_company_kanban"/>
+            <field name="sequence">3</field>
+        </record>
+
+        <!-- Menu Loại nhân viên -->
+        <record id="forher_hr_menu_employee_type" model="ir.ui.menu">
+            <field name="name">Loại nhân viên</field>
+            <field name="parent_id" ref="hr.menu_hr_root"/> 
+            <field name="action" ref="action_employee_type"/>
+            <field name="sequence">4</field>
+        </record>
+
+    </data>
+</odoo>

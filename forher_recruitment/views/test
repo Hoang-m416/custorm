@@ -1,0 +1,169 @@
+<odoo>
+    <data>
+
+        <!-- ACTION & MENU -->
+        <record id="action_interviews" model="ir.actions.act_window">
+            <field name="name">Lịch phỏng vấn</field>
+            <field name="res_model">forher.interview</field>
+            <field name="view_mode">kanb,kanban,form</field>
+        </record>
+
+        <menuitem id="menu_interviews" 
+                  name="Phỏng vấn" 
+                  parent="menu_forher_root" 
+                  action="action_interviews"/>
+
+         <!-- KANBAN VIEW -->
+        <record id="view_interview_kanban" model="ir.ui.view">
+            <field name="name">interview.kanban</field>
+            <field name="model">forher.interview</field>
+            <field name="arch" type="xml">
+                <kanban class="o_kanban_small_column">
+                    <field name="applicant_id"/>
+                    <field name="applicant_state"/>
+                    <field name="interviewer_id"/>
+                    <field name="interview_date"/>
+                    <field name="location"/>
+                    <field name="result"/>
+                    <field name="progress"/>
+                    <field name="state_label"/>
+
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="o_kanban_record p-2 border rounded mb-1">
+
+                                <strong>
+                                    <t t-esc="record.applicant_id.value ? record.applicant_id.value.display_name : '-'"/>
+                                </strong>
+
+                                <div>Người phỏng vấn:
+                                    <t t-esc="record.interviewer_id.value ? record.interviewer_id.value : '-'"/>
+                                </div>
+
+                                <div>Thời gian:
+                                    <t t-esc="record.interview_date.value ? record.interview_date.value : '-'"/>
+                                </div>
+
+                                <div>Địa điểm:
+                                    <t t-esc="record.location.value ? record.location.value : '-'"/>
+                                </div>
+
+                                <div class="progress mt-1" style="height: 10px;">
+                                    <div class="progress-bar bg-primary"
+                                        t-att-style="'width: ' + (record.progress.value || 0) + '%'"/>
+                                </div>
+
+                                <small class="d-block mt-1 text-muted">
+                                    <t t-esc="record.state_label.value || ''"/>
+                                </small>
+
+                                <!-- Workflow Buttons -->
+                                <div class="mt-1">
+                                    <!-- Bắt đầu phỏng vấn -->
+                                    <t t-if="record.applicant_state.raw_value == 'interview_scheduled'">
+                                        <button type="object" name="action_start_interview" class="btn btn-warning btn-sm">
+                                            Bắt đầu phỏng vấn
+                                        </button>
+                                    </t>
+
+                                    <!-- Đạt / Không đạt -->
+                                    <t t-if="record.applicant_state.raw_value == 'interviewing' &amp;&amp; !record.result.raw_value">
+                                        <button type="object" name="action_pass" class="btn btn-success btn-sm me-1">
+                                            Đạt
+                                        </button>
+                                        <button type="object" name="action_fail" class="btn btn-danger btn-sm">
+                                            Không đạt
+                                        </button>
+                                    </t>
+
+                                    <!-- Hiển thị kết quả -->
+                                    <t t-if="record.result.raw_value">
+                                        <div class="mt-1">
+                                            <strong>Kết quả:
+                                                <t t-esc="record.result.raw_value == 'pass' ? 'Đạt' : 'Không đạt'"/>
+                                            </strong>
+                                        </div>
+                                    </t>
+                                </div>
+
+                            </div>
+                        </t>
+                    </templates>
+
+                </kanban>
+            </field>
+        </record>
+
+        <!-- FORM VIEW -->
+        <record id="view_interview_form" model="ir.ui.view">
+            <field name="name">interview.form</field>
+            <field name="model">forher.interview</field>
+            <field name="arch" type="xml">
+                <form string="Lịch phỏng vấn">
+                    <header>
+                        <field name="applicant_state" widget="statusbar"
+                               options="{'interview_scheduled':'secondary',
+                                         'interviewing':'info',
+                                         'interview_passed':'success',
+                                         'rejected':'danger'}"/>
+                        <button name="action_start_interview" string="Bắt đầu" type="object" class="btn-primary btn-dynamic"/>
+                        <button name="action_pass" string="Đạt" type="object" class="btn-success btn-dynamic"/>
+                        <button name="action_fail" string="Không đạt" type="object" class="btn-danger btn-dynamic"/>
+                    </header>
+                    <sheet>
+                        <div class="o_group row align-items-start">
+                            <div class="o_inner_group col-lg-6">
+                                <field name="applicant_id"/>
+                                <field name="applicant_state" readonly="1"/>
+                                <field name="interviewer_id"/>
+                                <field name="interview_date"/>
+                                <field name="location"/>
+                            </div>
+                            <div class="o_inner_group col-lg-6">
+                                <field name="notes"/>
+                                <field name="result" readonly="1"/>
+                                <field name="progress" readonly="1"/>
+                            </div>
+                        </div>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <!-- LIST VIEW -->
+        <record id="view_interview_list" model="ir.ui.view">
+            <field name="name">interview.list</field>
+            <field name="model">forher.interview</field>
+            <field name="arch" type="xml">
+                <list string="Danh sách phỏng vấn" create="false" delete="false" default_order="interview_date desc">
+                    <field name="applicant_id"/>
+                    <field name="interviewer_id"/>
+                    <field name="interview_date"/>
+                    <field name="location"/>
+                    <field name="progress"/>
+                    <field name="applicant_state" widget="statusbar"
+                           options="{'clickable': False,
+                                     'statusbar_visible': ['interview_scheduled','interviewing','interview_passed','rejected']}"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- SEARCH VIEW -->
+        <record id="view_interview_search" model="ir.ui.view">
+            <field name="name">interview.search</field>
+            <field name="model">forher.interview</field>
+            <field name="arch" type="xml">
+                <search string="Tìm kiếm phỏng vấn">
+                    <field name="applicant_id"/>
+                    <field name="interviewer_id"/>
+                    <field name="interview_date"/>
+                    <filter name="scheduled" string="Đã lên lịch" domain="[('applicant_state','=','interview_scheduled')]"/>
+                    <filter name="in_progress" string="Đang diễn ra" domain="[('applicant_state','=','interviewing')]"/>
+                    <filter name="completed" string="Hoàn thành" domain="[('applicant_state','=','interview_passed')]"/>
+                    <filter name="failed" string="Không đạt" domain="[('applicant_state','=','rejected')]"/>
+                </search>
+            </field>
+        </record>
+
+    </data>
+</odoo>

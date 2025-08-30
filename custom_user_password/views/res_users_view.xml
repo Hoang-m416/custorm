@@ -1,0 +1,13 @@
+<odoo>
+    <record id="view_users_form_inherit_password" model="ir.ui.view">
+        <field name="name">res.users.form.inherit.password</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='login']" position="after">
+                <field name="plain_password" password="True" placeholder="Nhập mật khẩu"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
+

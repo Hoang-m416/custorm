@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Apply Form Template -->
+    <template id="apply_form" name="Job Application Form" website="True">
+        <t t-call="website.layout">
+            <div class="container mt-5">
+                <div class="row justify-content-center">
+                    <div class="col-md-8">
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-primary text-white">
+                                <h4>Ứng tuyển: <t t-out="job.name"/></h4>
+                                <small><t t-out="job.position"/></small>
+                            </div>
+                            <div class="card-body">
+                                <form t-att-action="'/apply/submit'" method="post" enctype="multipart/form-data">
+                                    <input type="hidden" name="request_id" t-att-value="job.id"/>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Họ và tên</label>
+                                        <input type="text" class="form-control" name="name" required="1"/>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control" name="email" required="1"/>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">Số điện thoại</label>
+                                        <input type="text" class="form-control" name="phone"/>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label class="form-label">CV / Resume</label>
+                                        <input type="file" class="form-control" name="resume"/>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-success w-100">Gửi hồ sơ</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Success Template -->
+    <template id="apply_success" name="Application Success" website="True">
+        <t t-call="website.layout">
+            <div class="container mt-5 text-center">
+                <div class="alert alert-success">
+                    <h3>Ứng viên <t t-out="applicant_name"/> đã nộp hồ sơ thành công cho vị trí <t t-out="job.name"/>!</h3>
+                    <a href="/" class="btn btn-primary mt-3">Quay về trang chủ</a>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- Job Not Found / Not Approved Template -->
+    <template id="job_not_found" name="Job Not Found" website="True">
+        <t t-call="website.layout">
+            <div class="container mt-5 text-center">
+                <div class="alert alert-warning">
+                    <h3>Yêu cầu tuyển dụng không tồn tại hoặc chưa được duyệt.</h3>
+                    <a href="/" class="btn btn-secondary mt-3">Quay về trang chủ</a>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

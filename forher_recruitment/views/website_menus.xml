@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Recruitment Apply URL Action -->
+    <record id="action_apply_form_url" model="ir.actions.act_url">
+        <field name="name">Ứng tuyển</field>
+        <field name="url">/apply</field> <!-- Đây là route controller của bạn -->
+        <field name="target">new</field> <!-- Mở link mới -->
+    </record>
+
+    <!-- Menu Ứng tuyển -->
+    <menuitem id="menu_apply_form"
+              name="Link Ứng tuyển"
+              parent="menu_forher_root"
+              action="action_apply_form_url"
+              sequence="50"/>
+</odoo>

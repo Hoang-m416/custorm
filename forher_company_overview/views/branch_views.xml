@@ -1,0 +1,18 @@
+<odoo>
+    <data>
+        <!-- Kế thừa form nhân viên để đổi nhãn -->
+        <record id="view_hr_employee_form_branch" model="ir.ui.view">
+            <field name="name">hr.employee.form.branch</field>
+            <field name="model">hr.employee</field>
+            <field name="inherit_id" ref="hr.view_employee_form"/>
+            <field name="arch" type="xml">
+
+                <!-- Thay nhãn company_id -->
+                <xpath expr="//field[@name='company_id']" position="attributes">
+                    <attribute name="string">Chi nhánh</attribute>
+                </xpath>
+
+            </field>
+        </record>
+    </data>
+</odoo>

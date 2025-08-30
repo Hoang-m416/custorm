@@ -1,0 +1,189 @@
+<odoo>
+    <!-- ================= MENU GỐC ================= -->
+    <menuitem id="menu_attendance_root"
+              name="Chấm công"
+              sequence="10"
+              groups="base.group_user,base.group_system"/>
+
+    <!-- ================= ACTION CHẤM CÔNG ================= -->
+    <record id="action_employee_attendance_custom" model="ir.actions.act_window">
+        <field name="name">Chấm công</field>
+        <field name="res_model">employee.attendance.custom</field>
+        <field name="view_mode">list,form</field>
+        <field name="groups_id" eval="[(4, ref('base.group_user')), (4, ref('base.group_system'))]"/>
+    </record>
+
+    <menuitem id="menu_employee_attendance_custom_list"
+              name="Danh sách chấm công"
+              parent="menu_attendance_root"
+              action="action_employee_attendance_custom"
+              groups="base.group_user,base.group_system"/>
+
+    <!-- ================= ACTION NGHỈ PHÉP / GIẢI TRÌNH ================= -->
+    <record id="action_employee_leave_request" model="ir.actions.act_window">
+        <field name="name">Đơn nghỉ phép / Giải trình</field>
+        <field name="res_model">employee.leave.request</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="groups_id" eval="[(4, ref('base.group_user')), (4, ref('base.group_system'))]"/>
+    </record>
+
+    <menuitem id="menu_employee_leave_request"
+              name="Đơn nghỉ phép / Giải trình"
+              parent="menu_attendance_root"
+              action="action_employee_leave_request"
+              groups="base.group_user,base.group_system"/>
+
+    <!-- ================= LIST VIEW CHẤM CÔNG ================= -->
+    <record id="view_employee_attendance_list" model="ir.ui.view">
+        <field name="name">employee.attendance.list</field>
+        <field name="model">employee.attendance.custom</field>
+        <field name="arch" type="xml">
+            <list string="Danh sách chấm công">
+                <field name="employee_id"/>
+                <field name="date"/>
+                <field name="check_in"/>
+                <field name="check_out"/>
+                <field name="work_hours"/>
+                <field name="overtime"/>
+                <field name="leave_days"/>
+                <field name="status" widget="statusbar" options="{
+                    'confirmed':'blue',
+                    'approved':'green'
+                }"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- ================= FORM VIEW CHẤM CÔNG ================= -->
+    <record id="view_employee_attendance_form" model="ir.ui.view">
+        <field name="name">employee.attendance.form</field>
+        <field name="model">employee.attendance.custom</field>
+        <field name="arch" type="xml">
+            <form string="Chấm công nhân sự">
+                <sheet>
+                    <notebook>
+                        <!-- Tab Chấm công -->
+                        <page string="Chấm công">
+                            <group>
+                                <field name="employee_id"/>
+                                <field name="date"/>
+                                <field name="work_type"/>
+                                <field name="check_in"/>
+                                <field name="check_out"/>
+                                <field name="work_hours" readonly="1"/>
+                                <field name="overtime"/>
+                                <field name="leave_days"/>
+                                <field name="status" widget="statusbar" options="{
+                                    'confirmed':'blue',
+                                    'approved':'green'
+                                }"/>
+                            </group>
+                            <footer>
+                                <button string="Check In" type="object" name="action_check_in" class="btn-primary"/>
+                                <button string="Check Out" type="object" name="action_check_out" class="btn-success"/>
+                                <button string="Save" type="object" name="write" class="btn-secondary"/>
+                            </footer>
+                        </page>
+
+                        <!-- Tab Giải trình -->
+                        <page string="Giải trình">
+                            <group>
+                                <field name="note"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ================= LIST & FORM NGHỈ PHÉP / GIẢI TRÌNH ================= -->
+<record id="view_employee_leave_request_kanban" model="ir.ui.view">
+    <field name="name">employee.leave.request.kanban</field>
+    <field name="model">employee.leave.request</field>
+    <field name="arch" type="xml">
+        <kanban>
+            <field name="employee_id"/>
+            <field name="start_date"/>
+            <field name="end_date"/>
+            <field name="leave_days"/>
+            <field name="status"/>
+            <templates>
+                <t t-name="kanban-box">
+                    <div t-attf-class="oe_kanban_card oe_kanban_global_click">
+                        <strong><field name="employee_id"/></strong><br/>
+                        <span><field name="start_date"/> → <field name="end_date"/></span><br/>
+                        <span>Số ngày: <field name="leave_days"/></span><br/>
+                        <span><field name="status" widget="statusbar" options="{
+                            'draft':'grey',
+                            'manager_approved':'blue',
+                            'hr_approved':'orange',
+                            'done':'green',
+                            'refused':'red'
+                        }"/></span>
+                        <div class="oe_kanban_footer">
+                            <button t-if="record.status.raw_value=='draft'" type="object"
+                                    name="action_manager_approve" class="btn btn-primary btn-sm">Gửi duyệt</button>
+                        </div>
+                    </div>
+                </t>
+            </templates>
+        </kanban>
+    </field>
+</record>
+
+
+
+    <record id="view_employee_leave_request_list" model="ir.ui.view">
+        <field name="name">employee.leave.request.list</field>
+        <field name="model">employee.leave.request</field>
+        <field name="arch" type="xml">
+            <list string="Danh sách đơn nghỉ phép / Giải trình">
+                <field name="employee_id"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="leave_days"/>
+                <field name="status" widget="statusbar" options="{
+                    'draft':'grey',
+                    'manager_approved':'blue',
+                    'hr_approved':'orange',
+                    'done':'green',
+                    'refused':'red'
+                }"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_employee_leave_request_form" model="ir.ui.view">
+        <field name="name">employee.leave.request.form</field>
+        <field name="model">employee.leave.request</field>
+        <field name="arch" type="xml">
+            <form string="Đơn nghỉ phép / Giải trình">
+                <sheet>
+                    <group>
+                        <field name="employee_id"/>
+                        <field name="start_date"/>
+                        <field name="end_date"/>
+                        <field name="leave_days" readonly="1"/>
+                    </group>
+                    <group>
+                        <field name="reason"/>
+                        <field name="status" widget="statusbar" options="{
+                            'draft':'grey',
+                            'manager_approved':'blue',
+                            'hr_approved':'orange',
+                            'done':'green',
+                            'refused':'red'
+                        }"/>
+                    </group>
+                    <footer>
+                        <button string="Trưởng đơn vị duyệt" type="object" name="action_manager_approve" class="btn-primary"/>
+                        <button string="P.TC-HC/Hiệu trưởng duyệt" type="object" name="action_hr_approve" class="btn-success"/>
+                        <button string="Approve" type="object" name="action_done" class="btn-success"/>
+                        <button string="Từ chối" type="object" name="action_refuse" class="btn-danger"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

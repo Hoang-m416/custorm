@@ -1,0 +1,19 @@
+<odoo>
+    <record id="view_permission_level_form" model="ir.ui.view">
+        <field name="name">forher.permission.level.form</field>
+        <field name="model">forher.permission.level</field>
+        <field name="arch" type="xml">
+            <form string="Cấp phân quyền">
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="code"/>
+                        <field name="description"/>
+                        <!-- Ẩn trường company_overview_id để không cho chọn -->
+                        <field name="company_overview_id" invisible="1"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

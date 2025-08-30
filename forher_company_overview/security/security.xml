@@ -1,0 +1,23 @@
+<odoo>
+    <data noupdate="1">
+
+        <!-- Nhóm Ban Giám Đốc -->
+        <record id="forher_group_board" model="res.groups">
+            <field name="name">Ban Giám Đốc (Forher)</field>
+            <field name="category_id" ref="base.module_category_human_resources"/>
+        </record>
+
+        <!-- Nhóm Quản lý Chi nhánh -->
+        <record id="forher_group_branch_manager" model="res.groups">
+            <field name="name">Quản lý Chi nhánh (Forher)</field>
+            <field name="category_id" ref="base.module_category_human_resources"/>
+        </record>
+
+        <!-- Nhóm Nhân viên -->
+        <record id="forher_group_employee" model="res.groups">
+            <field name="name">Nhân viên (Forher)</field>
+            <field name="category_id" ref="base.module_category_human_resources"/>
+        </record>
+
+    </data>
+</odoo>

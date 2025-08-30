@@ -1,0 +1,66 @@
+<odoo>
+    <!-- Main menu -->
+    <menuitem id="menu_forher_root" name="Tuyển dụng" sequence="10"
+              groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board,base.group_system"/>
+
+    <!-- Recruitment Request -->
+    <record id="action_recruitment_requests" model="ir.actions.act_window">
+        <field name="name">Danh sách yêu cầu tuyển dụng</field>
+        <field name="res_model">recruitment.request</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="groups_id" eval="[(6, 0, [
+            ref('forher_company_overview.forher_group_branch_manager'),
+            ref('forher_company_overview.forher_group_board'),
+            ref('base.group_system')
+        ])]"/>
+    </record>
+    <!-- Menu chính chỉ trỏ vào module chính -->
+<menuitem id="menu_recruitment_requests" name="Yêu cầu" parent="menu_forher_root"
+          action="action_recruitment_requests" sequence="10"
+         />
+
+    <!-- Applicant -->
+    <record id="action_applicants" model="ir.actions.act_window">
+        <field name="name">Ứng viên</field>
+        <field name="res_model">forher.applicant</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="groups_id" eval="[(6, 0, [
+            ref('forher_company_overview.forher_group_branch_manager'),
+            ref('forher_company_overview.forher_group_board'),
+            ref('base.group_system')
+        ])]"/>
+    </record>
+    <menuitem id="menu_applicants" name="Danh sách Ứng viên" parent="menu_forher_root"
+              action="action_applicants" sequence="20"
+              groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board,base.group_system"/>
+
+    <!-- Interview -->
+    <record id="action_interviews" model="ir.actions.act_window">
+        <field name="name">Phỏng vấn</field>
+        <field name="res_model">forher.interview</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="groups_id" eval="[(6, 0, [
+            ref('forher_company_overview.forher_group_branch_manager'),
+            ref('forher_company_overview.forher_group_board'),
+            ref('base.group_system')
+        ])]"/>
+    </record>
+    <menuitem id="menu_interviews" name="Phỏng vấn" parent="menu_forher_root"
+              action="action_interviews" sequence="30"
+              groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board,base.group_system"/>
+
+    <!-- Offer Letter -->
+    <record id="action_offer_letters" model="ir.actions.act_window">
+        <field name="name">Offer Letter</field>
+        <field name="res_model">forher.offer.letter</field>
+        <field name="view_mode">kanban,form</field>
+        <field name="groups_id" eval="[(6, 0, [
+            ref('forher_company_overview.forher_group_branch_manager'),
+            ref('forher_company_overview.forher_group_board'),
+            ref('base.group_system')
+        ])]"/>
+    </record>
+    <menuitem id="menu_offer_letters" name="Offer Letter" parent="menu_forher_root"
+              action="action_offer_letters" sequence="40"
+              groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board,base.group_system"/>
+</odoo>
