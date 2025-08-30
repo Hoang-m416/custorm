@@ -15,16 +15,21 @@
             <field name="name">forher.company.kanban</field>
             <field name="model">res.company</field>
             <field name="arch" type="xml">
-                <kanban class="o_kanban_example">
+               <kanban class="o_kanban_example">
                     <field name="name"/>
-                    <field name="manager_id"/> 
-                    <field name="employee_count"/> 
+                    <field name="manager_id"/>
+                    <field name="employee_count"/>
                     <templates>
                         <t t-name="kanban-box">
                             <div class="oe_kanban_global_click">
-                                <strong><field name="name"/></strong>
+                                <strong><t t-esc="record.name.value"/></strong>
                                 <div>
-                                    <span>Quản lý: <field name="manager_id"/></span>
+                                    <span>Quản lý: 
+                                        <t t-if="record.manager_id.value">
+                                            <t t-esc="record.manager_id.value"/>
+                                        </t>
+                                        <t t-else="">Chưa có</t>
+                                    </span>
                                 </div>
                                 <div class="mt-2">
                                     <button type="object"
@@ -37,6 +42,7 @@
                         </t>
                     </templates>
                 </kanban>
+
             </field>
         </record>
 

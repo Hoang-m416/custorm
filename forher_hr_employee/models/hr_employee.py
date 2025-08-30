@@ -74,19 +74,12 @@ class HrEmployee(models.Model):
     )
 
     # ================= Kiểm tra các field bắt buộc =================
-    @api.constrains('dob', 'gender', 'identity_id', 'address', 'work_phone', 'email_personal', 'bank_account', 'bank_name')
+    @api.constrains('work_phone')
     def _check_required_personal_bank_fields(self):
         for rec in self:
             missing_fields = []
             for field_name, label in [
-                ('dob','Ngày sinh'),
-                ('gender','Giới tính'),
-                ('identity_id','CMND/CCCD'),
-                ('address','Địa chỉ'),
                 ('work_phone','Số điện thoại'),
-                ('email_personal','Email cá nhân'),
-                ('bank_account','Tài khoản ngân hàng'),
-                ('bank_name','Ngân hàng')
             ]:
                 if not getattr(rec, field_name):
                     missing_fields.append(label)
@@ -148,24 +141,41 @@ class HrEmployeeDocument(models.Model):
 
 
 # ================= Compute số nhân viên trên Company =================
-class ResCompany(models.Model):
+lass ResCompany(models.Model):
     _inherit = 'res.company'
 
-     # Người quản lý của công ty
+    # Người quản lý của chi nhánh
     manager_id = fields.Many2one(
-        'hr.employee',           # liên kết với model nhân viên
-        string='Người quản lý'
+        'hr.employee',
+        string='Người quản lý',
+        compute='_compute_manager_id',
+        store=True
     )
 
+    # Danh sách nhân viên thuộc chi nhánh
+    employee_ids = fields.One2many(
+        'hr.employee', 'company_id', string='Nhân viên'
+    )
+
+    # Số lượng nhân viên
     employee_count = fields.Integer(
         'Nhân viên',
         compute='_compute_employee_count'
     )
 
+    # Compute manager_id dựa vào trường selection 'r' trong hr.employee
+    @api.depends('employee_ids', 'employee_ids.r')
+    def _compute_manager_id(self):
+        for company in self:
+            manager = company.employee_ids.filtered(lambda e: e.r == 'manager')
+            company.manager_id = manager[:1].id if manager else False
+
+    # Compute số lượng nhân viên
     def _compute_employee_count(self):
         for company in self:
-            company.employee_count = self.env['hr.employee'].search_count([('company_id', '=', company.id)])
+            company.employee_count = len(company.employee_ids)
 
+    # Action xem danh sách nhân viên
     def action_view_employees(self):
         self.ensure_one()
         return {
