@@ -141,7 +141,7 @@ class HrEmployeeDocument(models.Model):
 
 
 # ================= Compute số nhân viên trên Company =================
-lass ResCompany(models.Model):
+class ResCompany(models.Model):
     _inherit = 'res.company'
 
     # Người quản lý của chi nhánh
