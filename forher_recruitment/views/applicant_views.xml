@@ -137,37 +137,62 @@
                 <form string="Ứng viên">
                     <header>
                         <field name="state" widget="statusbar"
-                               options="{'new':'secondary',
-                                         'screened':'info',
-                                         'interview_scheduled':'primary',
-                                         'interviewing':'teal',
-                                         'interview_passed':'success',
-                                         'pending_confirmation':'warning',
-                                         'hire_confirmed':'primary',
-                                         'offer':'darkblue',
-                                         'hired':'success',
-                                         'waiting':'warning',
-                                         'rejected':'danger'}"/>
-                        <button name="action_screen" string="Sàng lọc" type="object" class="btn-primary btn-dynamic"/>
-                        <button name="action_schedule_interview_wizard" string="Lên lịch PV" type="object" class="btn-secondary btn-dynamic"/>
-                        <button name="action_send_offer" string="Gửi Offer" type="object" class="btn-warning btn-dynamic"/>
-                        <button name="action_confirm_hire" string="Xác nhận Tuyển" type="object" class="btn-success btn-dynamic"/>
-                        <button name="action_reject" string="Từ chối" type="object" class="btn-danger btn-dynamic"/>
-                        <button name="action_hire" string="Tạo Nhân viên" type="object" class="btn-success btn-dynamic"/>
+                            options="{'new':'secondary',
+                                        'screened':'info',
+                                        'interview_scheduled':'primary',
+                                        'interviewing':'teal',
+                                        'interview_passed':'success',
+                                        'pending_confirmation':'warning',
+                                        'hire_confirmed':'primary',
+                                        'offer':'darkblue',
+                                        'hired':'success',
+                                        'waiting':'warning',
+                                        'rejected':'danger'}"/>
+                        
+                        <!-- Chỉ hiện khi trạng thái là 'new' -->
+                        <button name="action_screen" string="Sàng lọc" type="object" class="btn-primary btn-dynamic"
+                                invisible="state != 'new'"/>
+                        
+                        <!-- Chỉ hiện khi trạng thái là 'screened' -->
+                        <button name="action_schedule_interview_wizard" string="Lên lịch PV" type="object" class="btn-secondary btn-dynamic"
+                                invisible="state != 'screened'"/>
+                        
+                        <!-- Chỉ hiện khi trạng thái là 'interview_passed' -->
+                        <button name="action_send_offer" string="Gửi Offer" type="object" class="btn-warning btn-dynamic"
+                                invisible="state != 'interview_passed'"/>
+                        
+                        <!-- Chỉ hiện khi trạng thái là 'pending_confirmation' -->
+                        <button name="action_confirm_hire" string="Xác nhận Tuyển" type="object" class="btn-success btn-dynamic"
+                                invisible="state != 'interview_passed'"/>
+                        
+                        <!-- Chỉ hiện khi trạng thái là 'new','screened','interview_scheduled','interviewing','interview_passed','pending_confirmation' -->
+                        <button name="action_reject" string="Từ chối" type="object" class="btn-danger btn-dynamic"
+                                invisible="state in ('hired','rejected','hire_confirmed','offer')"/>
+                        
+                        <!-- Chỉ hiện khi trạng thái là 'hire_confirmed' -->
+                        <button name="action_hire" string="Tạo Nhân viên" type="object" class="btn-success btn-dynamic"
+                                invisible="state != 'hire_confirmed'"/>
                     </header>
+
                     <sheet>
-                        <group>
-                            <field name="name"/>
-                            <field name="email"/>
-                            <field name="phone"/>
-                            <field name="position_applied"/>
-                            <field name="request_id"/>
-                            <field name="company_id" readonly="1"/>
-                            <field name="progress" readonly="1"/>
-                            <field name="resume" filename="resume_filename" widget="binary" options="{'preview_image': False}"/>
-                            <field name="resume_filename" readonly="1"/>
-                        </group>
-                    </sheet>
+                    <group>
+                        <field name="name"/>
+                        <field name="email"/>
+                        <field name="phone"/>
+                        <field name="position_applied"/>
+                        <field name="request_id"/>
+                        <field name="company_id" readonly="1"/>
+                        <field name="progress" readonly="1"/>
+                        
+                        <!-- File upload -->
+                        <field name="resume" widget="binary" filename="resume_filename"
+                            options="{'preview_image': False}"/>
+                        
+                        <!-- Tên file hiển thị -->
+                        <field name="resume_filename" readonly="1"/>
+                    </group>
+                </sheet>
+
                 </form>
             </field>
         </record>

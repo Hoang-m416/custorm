@@ -1,5 +1,9 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_employee_attendance_user,employee.attendance.user,model_employee_attendance_custom,base.group_user,1,1,0,0
 access_employee_attendance_admin,employee.attendance.admin,model_employee_attendance_custom,base.group_system,1,1,1,1
+
 access_employee_leave_request_user,employee.leave.request.user,model_employee_leave_request,base.group_user,1,1,0,0
 access_employee_leave_request_admin,employee.leave.request.admin,model_employee_leave_request,base.group_system,1,1,1,1
+
+access_attendance_check_wizard_user,attendance.check.wizard.user,model_attendance_check_wizard,base.group_user,1,0,1,0
+access_attendance_check_wizard_admin,attendance.check.wizard.admin,model_attendance_check_wizard,base.group_system,1,1,1,1

@@ -8,6 +8,7 @@
     'data': [
     # Security
     'security/ir.model.access.csv',
+    'security/groups.xml',
 
     # Backend views / actions / menus
     'views/recruitment_request_views.xml',    

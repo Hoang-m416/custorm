@@ -125,17 +125,25 @@
                     <header>
                         <field name="state" widget="statusbar"
                             options="{'draft':'secondary',
-                                      'submitted':'info',
-                                      'approved':'primary',
-                                      'completed':'success',
-                                      'rejected':'danger'}"/>
+                                    'submitted':'info',
+                                    'approved':'primary',
+                                    'completed':'success',
+                                    'rejected':'danger'}"/>
+                        
+                        <!-- Nút chỉ hiển thị khi trạng thái là draft -->
                         <button name="action_submit" string="Gửi duyệt" type="object" class="btn-primary btn-dynamic"
-                                groups="forher_company_overview.forher_group_branch_manager,base.group_system"/>
+                                groups="forher_company_overview.forher_group_branch_manager,base.group_system"
+                                invisible="state != 'draft'"/>
+                        
+                        <!-- Nút chỉ hiển thị khi trạng thái là submitted -->
                         <button name="action_approve" string="Duyệt" type="object" class="btn-success btn-dynamic"
-                                groups="forher_company_overview.forher_group_board,base.group_system"/>
+                                groups="forher_company_overview.forher_group_board,base.group_system"
+                                invisible="state != 'submitted'"/>
                         <button name="action_reject" string="Từ chối" type="object" class="btn-danger btn-dynamic"
-                                groups="forher_company_overview.forher_group_board,base.group_system"/>
+                                groups="forher_company_overview.forher_group_board,base.group_system"
+                                invisible="state != 'submitted'"/>
                     </header>
+
                     <sheet>
                         <div class="o_group row align-items-start">
                             <div class="o_inner_group col-lg-6">

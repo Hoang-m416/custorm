@@ -1,0 +1,3 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_res_users_pass_history_admin,res.users.pass.history admin,model_res_users_pass_history,base.group_system,1,1,1,1
+access_res_users_pass_history_internal,res.users.pass.history for Internal Users,model_res_users_pass_history,base.group_user,1,1,1,0
