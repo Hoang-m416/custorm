@@ -1,19 +1,13 @@
 <odoo>
     <data>
 
-        <!-- ================= WIZARD ACTION ================= -->
+        <!-- ================= WIZARD ACTION THÊM ỨNG VIÊN ================= -->
         <record id="action_applicant_wizard" model="ir.actions.act_window">
             <field name="name">Thêm Ứng viên</field>
             <field name="res_model">forher.applicant.wizard</field>
             <field name="view_mode">form</field>
             <field name="target">new</field>
         </record>
-
-        <menuitem id="menu_applicant_wizard"
-                  name="Thêm ứng viên"
-                  parent="menu_forher_root"
-                  action="action_applicant_wizard"
-                  sequence="25"/>
 
         <!-- ================= KANBAN VIEW ================= -->
         <record id="view_applicant_kanban" model="ir.ui.view">
@@ -77,7 +71,7 @@
                                         </button>
                                     </t>
                                     <t t-if="record.state.raw_value=='screened'">
-                                        <button type="object" name="action_schedule_interview"
+                                        <button type="object" name="action_schedule_interview_wizard"
                                                 class="btn btn-secondary btn-sm"
                                                 groups="forher_company_overview.forher_group_branch_manager,base.group_system">
                                             Lên lịch PV
@@ -89,20 +83,17 @@
                                         </button>
                                     </t>
 
-                                    <!-- Đậu PV -->
                                     <t t-if="record.state.raw_value=='interview_passed'">
                                         <button type="object" name="action_send_offer"
                                                 class="btn btn-warning btn-sm"
                                                 groups="forher_company_overview.forher_group_branch_manager,base.group_system">
                                             Gửi Offer
                                         </button>
-
                                         <button type="object" name="action_confirm_hire"
                                                 class="btn btn-success btn-sm"
                                                 groups="forher_company_overview.forher_group_branch_manager,base.group_system">
                                             Xác nhận Tuyển
                                         </button>
-
                                         <button type="object" name="action_reject"
                                                 class="btn btn-danger btn-sm"
                                                 groups="forher_company_overview.forher_group_branch_manager,base.group_system">
@@ -110,19 +101,18 @@
                                         </button>
                                     </t>
 
-                                    <!-- Pending Offer -->
                                     <t t-if="record.state.raw_value=='pending_confirmation'">
                                         <span class="badge bg-info">Đã gửi Offer - Chờ ứng viên xác nhận</span>
                                     </t>
 
-                                    <!-- Nút Tạo Nhân viên -->
-                                    <t t-if="record.state.raw_value == 'hire_confirmed'">
+                                    <t t-if="record.state.raw_value=='hire_confirmed'">
                                         <button type="object" name="action_hire"
                                                 class="btn btn-success btn-sm"
                                                 groups="forher_company_overview.forher_group_branch_manager,base.group_system">
                                             Tạo Nhân viên
                                         </button>
                                     </t>
+
                                     <t t-if="record.state.raw_value=='waiting'">
                                         <button type="object" name="action_delete_waiting"
                                                 class="btn btn-danger btn-sm"
@@ -139,23 +129,6 @@
             </field>
         </record>
 
-        <!-- ================= LIST VIEW ================= -->
-        <record id="view_applicant_list" model="ir.ui.view">
-            <field name="name">applicant.list</field>
-            <field name="model">forher.applicant</field>
-            <field name="arch" type="xml">
-                <list string="Danh sách ứng viên" create="false" delete="false" default_order="create_date desc">
-                    <field name="name"/>
-                    <field name="email"/>
-                    <field name="phone"/>
-                    <field name="position_applied"/>
-                    <field name="state" widget="statusbar"
-                           options="{'clickable': False,
-                                     'statusbar_visible': ['new','screened','interview_passed','pending_confirmation','hire_confirmed']}"/>
-                </list>
-            </field>
-        </record>
-
         <!-- ================= FORM VIEW ================= -->
         <record id="view_applicant_form" model="ir.ui.view">
             <field name="name">applicant.form</field>
@@ -166,27 +139,21 @@
                         <field name="state" widget="statusbar"
                                options="{'new':'secondary',
                                          'screened':'info',
-                                         'interview_passed':'primary',
+                                         'interview_scheduled':'primary',
+                                         'interviewing':'teal',
+                                         'interview_passed':'success',
                                          'pending_confirmation':'warning',
-                                         'hire_confirmed':'success'}"/>
-                        <button name="action_screen" string="Sàng lọc" type="object"
-                                class="btn-primary btn-dynamic"
-                                groups="forher_company_overview.forher_group_branch_manager,base.group_system"/>
-                        <button name="action_schedule_interview" string="Lên lịch PV" type="object"
-                                class="btn-secondary btn-dynamic"
-                                groups="forher_company_overview.forher_group_branch_manager,base.group_system"/>
-                        <button name="action_send_offer" string="Gửi Offer" type="object"
-                                class="btn-warning btn-dynamic"
-                                groups="forher_company_overview.forher_group_branch_manager,base.group_system"/>
-                        <button name="action_confirm_hire" string="Xác nhận Tuyển" type="object"
-                                class="btn-success btn-dynamic"
-                                groups="forher_company_overview.forher_group_branch_manager,base.group_system"/>
-                        <button name="action_reject" string="Từ chối" type="object"
-                                class="btn-danger btn-dynamic"
-                                groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board,base.group_system"/>
-                        <button name="action_hire" string="Tạo Nhân viên" type="object"
-                                class="btn-success btn-dynamic"
-                                groups="forher_company_overview.forher_group_branch_manager,base.group_system"/>
+                                         'hire_confirmed':'primary',
+                                         'offer':'darkblue',
+                                         'hired':'success',
+                                         'waiting':'warning',
+                                         'rejected':'danger'}"/>
+                        <button name="action_screen" string="Sàng lọc" type="object" class="btn-primary btn-dynamic"/>
+                        <button name="action_schedule_interview_wizard" string="Lên lịch PV" type="object" class="btn-secondary btn-dynamic"/>
+                        <button name="action_send_offer" string="Gửi Offer" type="object" class="btn-warning btn-dynamic"/>
+                        <button name="action_confirm_hire" string="Xác nhận Tuyển" type="object" class="btn-success btn-dynamic"/>
+                        <button name="action_reject" string="Từ chối" type="object" class="btn-danger btn-dynamic"/>
+                        <button name="action_hire" string="Tạo Nhân viên" type="object" class="btn-success btn-dynamic"/>
                     </header>
                     <sheet>
                         <group>
@@ -202,6 +169,21 @@
                         </group>
                     </sheet>
                 </form>
+            </field>
+        </record>
+
+        <!-- ================= LIST VIEW ================= -->
+        <record id="view_applicant_list" model="ir.ui.view">
+            <field name="name">applicant.list</field>
+            <field name="model">forher.applicant</field>
+            <field name="arch" type="xml">
+                <list string="Danh sách ứng viên" create="false" delete="false" default_order="create_date desc">
+                    <field name="name"/>
+                    <field name="email"/>
+                    <field name="phone"/>
+                    <field name="position_applied"/>
+                    <field name="state"/>
+                </list>
             </field>
         </record>
 
@@ -230,6 +212,30 @@
             </field>
         </record>
 
+        <!-- ================= WIZARD FORM LÊN LỊCH PHỎNG VẤN ================= -->
+        <record id="view_applicant_schedule_wizard_form" model="ir.ui.view">
+            <field name="name">applicant.schedule.wizard.form</field>
+            <field name="model">forher.applicant.schedule.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Lên lịch phỏng vấn">
+                    <sheet>
+                        <group>
+                            <field name="applicant_id" readonly="1"/>
+                            <field name="interviewer_id" string="Người phỏng vấn"/>
+                            <field name="interview_date"/>
+                            <field name="duration"/>
+                            <field name="location"/>
+                            <field name="notes"/>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button name="action_schedule" string="Xác nhận" type="object" class="btn-primary"/>
+                        <button string="Hủy" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
         <!-- ================= SEARCH VIEW ================= -->
         <record id="view_applicant_search" model="ir.ui.view">
             <field name="name">applicant.search</field>
@@ -242,9 +248,16 @@
                     <field name="position_applied"/>
                     <filter name="new" string="Mới" domain="[('state','=','new')]"/>
                     <filter name="screened" string="Đã sàng lọc" domain="[('state','=','screened')]"/>
-                    <filter name="interview_passed" string="PV Đậu" domain="[('state','=','interview_passed')]"/>
-                    <filter name="pending_confirmation" string="Đã gửi Offer" domain="[('state','=','pending_confirmation')]"/>
-                    <filter name="hire_confirmed" string="Đã tuyển" domain="[('state','=','hire_confirmed')]"/>
+                    <filter name="interview_scheduled" string="Đã lên lịch PV" domain="[('state','=','interview_scheduled')]"/>
+                    <filter name="interviewing" string="Đang phỏng vấn" domain="[('state','=','interviewing')]"/>
+                    <filter name="interview_passed" string="Đậu phỏng vấn" domain="[('state','=','interview_passed')]"/>
+                    <filter name="offer" string="Offer" domain="[('state','=','offer')]"/>
+                    <filter name="pending_confirmation" string="Chờ xác nhận" domain="[('state','=','pending_confirmation')]"/>
+                    <filter name="direct_hire" string="Tuyển ngay" domain="[('state','=','direct_hire')]"/>
+                    <filter name="hire_confirmed" string="Đã xác nhận tuyển" domain="[('state','=','hire_confirmed')]"/>
+                    <filter name="hired" string="Đã tuyển" domain="[('state','=','hired')]"/>
+                    <filter name="waiting" string="Dự bị" domain="[('state','=','waiting')]"/>
+                    <filter name="rejected" string="Từ chối" domain="[('state','=','rejected')]"/>
                 </search>
             </field>
         </record>

@@ -17,6 +17,11 @@
                                    base.group_system"/>
                 </header>
                 
+                <!-- Thêm employee_code ngay sau work_phone -->
+                <xpath expr="//field[@name='work_phone']" position="after">
+                    <field name="employee_code" readonly="1"/>
+                </xpath>
+
                 <!-- Ẩn department -->
                 <xpath expr="//field[@name='department_id']" position="attributes">
                     <attribute name="invisible">1</attribute>

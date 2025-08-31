@@ -5,7 +5,7 @@
         <record id="action_interviews" model="ir.actions.act_window">
             <field name="name">Lịch phỏng vấn</field>
             <field name="res_model">forher.interview</field>
-            <field name="view_mode">list,kanban,form</field>
+            <field name="view_mode">kanban,list,form</field>
         </record>
 
         <menuitem id="menu_interviews" 
@@ -13,7 +13,7 @@
                   parent="menu_forher_root" 
                   action="action_interviews"/>
 
-         <!-- KANBAN VIEW -->
+        <!-- KANBAN VIEW -->
         <record id="view_interview_kanban" model="ir.ui.view">
             <field name="name">interview.kanban</field>
             <field name="model">forher.interview</field>
@@ -57,16 +57,13 @@
                                     <t t-esc="record.state_label.value || ''"/>
                                 </small>
 
-                                <!-- Workflow Buttons -->
                                 <div class="mt-1">
-                                    <!-- Bắt đầu phỏng vấn -->
                                     <t t-if="record.applicant_state.raw_value == 'interview_scheduled'">
                                         <button type="object" name="action_start_interview" class="btn btn-warning btn-sm">
                                             Bắt đầu phỏng vấn
                                         </button>
                                     </t>
 
-                                    <!-- Đạt / Không đạt -->
                                     <t t-if="record.applicant_state.raw_value == 'interviewing' &amp;&amp; !record.result.raw_value">
                                         <button type="object" name="action_pass" class="btn btn-success btn-sm me-1">
                                             Đạt
@@ -76,7 +73,6 @@
                                         </button>
                                     </t>
 
-                                    <!-- Hiển thị kết quả -->
                                     <t t-if="record.result.raw_value">
                                         <div class="mt-1">
                                             <strong>Kết quả:
@@ -94,41 +90,37 @@
             </field>
         </record>
 
-        <!-- FORM VIEW -->
+       <!-- FORM VIEW READ-ONLY -->
         <record id="view_interview_form" model="ir.ui.view">
-            <field name="name">interview.form</field>
+            <field name="name">interview.form.readonly</field>
             <field name="model">forher.interview</field>
             <field name="arch" type="xml">
                 <form string="Lịch phỏng vấn">
                     <header>
                         <field name="applicant_state" widget="statusbar"
-                               options="{'interview_scheduled':'secondary',
-                                         'interviewing':'info',
-                                         'interview_passed':'success',
-                                         'rejected':'danger'}"/>
-                        <button name="action_start_interview" string="Bắt đầu" type="object" class="btn-primary btn-dynamic"/>
-                        <button name="action_pass" string="Đạt" type="object" class="btn-success btn-dynamic"/>
-                        <button name="action_fail" string="Không đạt" type="object" class="btn-danger btn-dynamic"/>
+                            options="{'interview_scheduled':'secondary',
+                                        'interviewing':'info',
+                                        'interview_passed':'success',
+                                        'rejected':'danger'}" readonly="1"/>
                     </header>
                     <sheet>
-                        <div class="o_group row align-items-start">
-                            <div class="o_inner_group col-lg-6">
-                                <field name="applicant_id"/>
-                                <field name="applicant_state" readonly="1"/>
-                                <field name="interviewer_id"/>
-                                <field name="interview_date"/>
-                                <field name="location"/>
-                            </div>
-                            <div class="o_inner_group col-lg-6">
-                                <field name="notes"/>
-                                <field name="result" readonly="1"/>
-                                <field name="progress" readonly="1"/>
-                            </div>
-                        </div>
+                        <group string="Thông tin chung">
+                            <field name="applicant_id" string="Ứng viên" readonly="1"/>
+                            <field name="applicant_state" string="Trạng thái" readonly="1"/>
+                            <field name="interviewer_id" string="Người phỏng vấn" readonly="1"/>
+                            <field name="interview_date" string="Ngày/giờ phỏng vấn" readonly="1"/>
+                            <field name="location" string="Địa điểm" readonly="1"/>
+                        </group>
+                        <group string="Chi tiết">
+                            <field name="notes" string="Ghi chú" readonly="1"/>
+                            <field name="result" string="Kết quả" readonly="1"/>
+                            <field name="progress" string="Tiến độ" readonly="1"/>
+                        </group>
                     </sheet>
                 </form>
             </field>
         </record>
+
 
         <!-- LIST VIEW -->
         <record id="view_interview_list" model="ir.ui.view">
@@ -141,15 +133,13 @@
                     <field name="interview_date"/>
                     <field name="location"/>
                     <field name="progress"/>
-                    <field name="applicant_state" widget="statusbar"
-                           options="{'clickable': False,
-                                     'statusbar_visible': ['interview_scheduled','interviewing','interview_passed','rejected']}"/>
+                    <field name="applicant_state" readonly="1"/>
                 </list>
             </field>
         </record>
 
         <!-- SEARCH VIEW -->
-        <record id="view_interview_search" model="ir.ui.view">
+       <record id="view_interview_search" model="ir.ui.view">
             <field name="name">interview.search</field>
             <field name="model">forher.interview</field>
             <field name="arch" type="xml">
@@ -157,10 +147,19 @@
                     <field name="applicant_id"/>
                     <field name="interviewer_id"/>
                     <field name="interview_date"/>
+
                     <filter name="scheduled" string="Đã lên lịch" domain="[('applicant_state','=','interview_scheduled')]"/>
                     <filter name="in_progress" string="Đang diễn ra" domain="[('applicant_state','=','interviewing')]"/>
-                    <filter name="completed" string="Hoàn thành" domain="[('applicant_state','=','interview_passed')]"/>
+                    <filter name="completed" string="Đậu phỏng vấn" domain="[('applicant_state','=','interview_passed')]"/>
                     <filter name="failed" string="Không đạt" domain="[('applicant_state','=','rejected')]"/>
+                    <filter name="new" string="Mới" domain="[('applicant_state','=','new')]"/>
+                    <filter name="screened" string="Đã sàng lọc" domain="[('applicant_state','=','screened')]"/>
+                    <filter name="offer" string="Offer" domain="[('applicant_state','=','offer')]"/>
+                    <filter name="pending_confirmation" string="Chờ xác nhận" domain="[('applicant_state','=','pending_confirmation')]"/>
+                    <filter name="direct_hire" string="Tuyển ngay" domain="[('applicant_state','=','direct_hire')]"/>
+                    <filter name="hire_confirmed" string="Đã xác nhận tuyển" domain="[('applicant_state','=','hire_confirmed')]"/>
+                    <filter name="hired" string="Đã tuyển" domain="[('applicant_state','=','hired')]"/>
+                    <filter name="waiting" string="Dự bị" domain="[('applicant_state','=','waiting')]"/>
                 </search>
             </field>
         </record>

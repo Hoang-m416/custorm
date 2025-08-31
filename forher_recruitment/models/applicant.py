@@ -2,7 +2,6 @@ from odoo import models, fields, api, _
 from odoo.exceptions import UserError
 from datetime import timedelta
 
-
 class Applicant(models.Model):
     _name = "forher.applicant"
     _description = "Ứng viên"
@@ -48,6 +47,7 @@ class Applicant(models.Model):
     # --- Computed Fields ---
     progress = fields.Float("Tiến trình (%)", compute="_compute_progress", store=True)
     state_label = fields.Char("Trạng thái hiển thị", compute="_compute_state_label", store=True)
+    progress_color = fields.Char("Màu tiến trình", compute="_compute_progress_color", store=True)
 
     # --- Override create ---
     @api.model
@@ -71,47 +71,18 @@ class Applicant(models.Model):
             rec.state = 'screened'
             rec.message_post(body=_("Ứng viên đã được sàng lọc."))
 
-    def action_schedule_interview(self):
-        for rec in self:
-            if rec.state != 'screened':
-                raise UserError(_("Chỉ ứng viên đã sàng lọc mới có thể lên lịch phỏng vấn."))
-
-            # Tạo lịch calendar
-            event = self.env['calendar.event'].create({
-                'name': _("Phỏng vấn: %s") % rec.name,
-                'start': fields.Datetime.now() + timedelta(days=1),
-                'stop': fields.Datetime.now() + timedelta(days=1, hours=1),
-                'allday': False,
-                'description': _("Phỏng vấn ứng viên: %s\nVị trí: %s") %
-                                (rec.name, rec.position_applied or ''),
-                'partner_ids': [(4, self.env.user.partner_id.id)],
-            })
-
-            # Lấy hr.employee của user hiện tại
-            interviewer_emp = self.env['hr.employee'].search([('user_id', '=', self.env.user.id)], limit=1)
-            if not interviewer_emp:
-                raise UserError(_("Người phỏng vấn chưa được đăng ký nhân viên."))
-
-            # Tạo record forher.interview
-            interview = self.env['forher.interview'].create({
-                'applicant_id': rec.id,
-                'interview_date': event.start,
-                'interviewer_id': interviewer_emp.id,
-                'location': 'Văn phòng chính',
-                'notes': 'Tạo tự động khi lên lịch phỏng vấn',
-            })
-
-            rec.state = 'interview_scheduled'
-            rec.message_post(body=_("Ứng viên đã được lên lịch phỏng vấn: %s") % event.name)
-
-            return {
-                'name': _('Phỏng vấn'),
-                'type': 'ir.actions.act_window',
-                'res_model': 'forher.interview',
-                'view_mode': 'form',
-                'res_id': interview.id,
-                'target': 'current',
-            }
+    def action_schedule_interview_wizard(self):
+        self.ensure_one()
+        if self.state != 'screened':
+            raise UserError(_("Chỉ ứng viên đã sàng lọc mới có thể lên lịch phỏng vấn."))
+        return {
+            'name': _('Lên lịch phỏng vấn'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'forher.applicant.schedule.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_applicant_id': self.id}
+        }
 
     def action_send_offer(self):
         for rec in self:
@@ -129,7 +100,6 @@ class Applicant(models.Model):
                 raise UserError(_("Không tìm thấy mẫu email offer."))
 
             template.sudo().send_mail(offer_letter.id, force_send=True)
-
             rec.state = 'pending_confirmation'
             rec.message_post(body=_("Đã gửi offer đến ứng viên, đang chờ xác nhận."))
 
@@ -151,32 +121,20 @@ class Applicant(models.Model):
         for rec in self:
             if rec.state != 'hire_confirmed':
                 raise UserError(_("Chỉ ứng viên đã được xác nhận tuyển mới có thể tạo nhân viên."))
-
-            # Map position sang hr.job
             job_id = False
             if rec.request_id and rec.request_id.position:
-                job_name = rec.request_id.position
-                job = self.env['hr.job'].sudo().search([('name', '=', job_name)], limit=1)
+                job = self.env['hr.job'].sudo().search([('name', '=', rec.request_id.position)], limit=1)
                 if not job:
-                    job = self.env['hr.job'].sudo().create({'name': job_name})
+                    job = self.env['hr.job'].sudo().create({'name': rec.request_id.position})
                 job_id = job.id
 
-            # Lấy hoặc tạo hr.department theo tên công ty
-            department_id = False
-            if rec.company_id:
-                department = self.env['hr.department'].sudo().search([('name', '=', rec.company_id.name)], limit=1)
-                if not department:
-                    department = self.env['hr.department'].sudo().create({'name': rec.company_id.name})
-                department_id = department.id
-
-            # --- Tạo email công ty ---
             company_domain = "forher.com"
 
             def normalize_name(name):
                 import unicodedata
                 name = name.lower().strip()
                 name = unicodedata.normalize('NFD', name)
-                name = ''.join(c for c in name if unicodedata.category(c) != 'Mn')  # bỏ dấu
+                name = ''.join(c for c in name if unicodedata.category(c) != 'Mn')
                 name = name.replace(' ', '.').replace('..', '.')
                 return ''.join(c for c in name if c.isalnum() or c == '.')
 
@@ -197,13 +155,10 @@ class Applicant(models.Model):
                 'work_phone': rec.phone,
                 'job_id': job_id,
                 'company_id': rec.company_id.id if rec.company_id else False,
-                'department_id': department_id,
             }
             self.env['hr.employee'].sudo().create(employee_vals)
-
             rec.state = 'hired'
             rec.message_post(body=_("Ứng viên đã được tuyển và tạo nhân viên với email: %s") % email_candidate)
-
             if rec.request_id:
                 rec.request_id.update_state_based_on_positions()
 
@@ -213,22 +168,13 @@ class Applicant(models.Model):
                 raise UserError(_("Chỉ có thể xóa ứng viên ở trạng thái Dự bị."))
             rec.unlink()
 
-    # Thêm trường màu
-    progress_color = fields.Char("Màu tiến trình", compute="_compute_progress_color", store=True)
-
+    # --- Computed Fields ---
     @api.depends('state')
     def _compute_progress_color(self):
         color_map = {
-            'new': 'blue',
-            'screened': 'orange',
-            'interview_scheduled': 'purple',
-            'interviewing': 'teal',
-            'interview_passed': 'green',
-            'hire_confirmed': 'primary',
-            'offer': 'darkblue',
-            'hired': 'success',
-            'waiting': 'warning',
-            'rejected': 'danger'
+            'new': 'blue', 'screened': 'orange', 'interview_scheduled': 'purple',
+            'interviewing': 'teal', 'interview_passed': 'green', 'hire_confirmed': 'primary',
+            'offer': 'darkblue', 'hired': 'success', 'waiting': 'warning', 'rejected': 'danger'
         }
         for rec in self:
             rec.progress_color = color_map.get(rec.state, 'info')
@@ -236,17 +182,9 @@ class Applicant(models.Model):
     @api.depends('state')
     def _compute_progress(self):
         progress_map = {
-            'new': 10,
-            'screened': 25,
-            'interview_scheduled': 40,
-            'interviewing': 55,
-            'interview_passed': 70,
-            'offer': 80,
-            'pending_confirmation': 85,
-            'direct_hire': 90,
-            'hired': 100,
-            'waiting': 60,
-            'rejected': 0
+            'new': 10, 'screened': 25, 'interview_scheduled': 40, 'interviewing': 55,
+            'interview_passed': 70, 'offer': 80, 'pending_confirmation': 85,
+            'direct_hire': 90, 'hired': 100, 'waiting': 60, 'rejected': 0
         }
         for rec in self:
             rec.progress = progress_map.get(rec.state, 0)
@@ -254,22 +192,13 @@ class Applicant(models.Model):
     @api.depends('state')
     def _compute_state_label(self):
         label_map = {
-            'new': 'Mới',
-            'screened': 'Sàng lọc',
-            'interview_scheduled': 'Đã lên lịch PV',
-            'interviewing': 'Đang phỏng vấn',
-            'interview_passed': 'Đậu phỏng vấn',
-            'offer': 'Offer',
-            'pending_confirmation': 'Chờ xác nhận',
-            'hire_confirmed': 'Đã xác nhận tuyển',
-            'direct_hire': 'Tuyển ngay',
-            'hired': 'Đã tuyển',
-            'waiting': 'Dự bị',
-            'rejected': 'Từ chối'
+            'new': 'Mới', 'screened': 'Sàng lọc', 'interview_scheduled': 'Đã lên lịch PV',
+            'interviewing': 'Đang phỏng vấn', 'interview_passed': 'Đậu phỏng vấn', 'offer': 'Offer',
+            'pending_confirmation': 'Chờ xác nhận', 'hire_confirmed': 'Đã xác nhận tuyển',
+            'direct_hire': 'Tuyển ngay', 'hired': 'Đã tuyển', 'waiting': 'Dự bị', 'rejected': 'Từ chối'
         }
         for rec in self:
             rec.state_label = label_map.get(rec.state, '')
-
 
 class ApplicantWizard(models.TransientModel):
     _name = "forher.applicant.wizard"
@@ -311,3 +240,59 @@ class ApplicantWizard(models.TransientModel):
             })
             applicant.message_post(body=_("Ứng viên được tạo từ wizard."))
         return {'type': 'ir.actions.act_window_close'}
+    
+class ApplicantScheduleWizard(models.TransientModel):
+    _name = "forher.applicant.schedule.wizard"
+    _description = "Wizard Lên lịch phỏng vấn"
+
+    applicant_id = fields.Many2one('forher.applicant', string="Ứng viên", required=True)
+    interviewer_id = fields.Many2one(
+        'hr.employee',
+        string="Người phỏng vấn",
+        required=True,
+        domain=[('active','=',True)]
+    )
+    interview_date = fields.Datetime(
+        string="Ngày/giờ phỏng vấn",
+        required=True,
+        default=fields.Datetime.now
+    )
+    duration = fields.Float(string="Thời lượng (giờ)", default=1.0)
+    location = fields.Char(string="Địa điểm", default="Văn phòng chính")
+    notes = fields.Text(string="Ghi chú")
+
+    def action_schedule(self):
+        self.ensure_one()
+
+        # Tạo sự kiện calendar
+        event = self.env['calendar.event'].create({
+            'name': _("Phỏng vấn: %s") % self.applicant_id.name,
+            'start': self.interview_date,
+            'stop': self.interview_date + timedelta(hours=self.duration),
+            'allday': False,
+            'description': self.notes or _("Phỏng vấn ứng viên: %s") % self.applicant_id.name,
+            'partner_ids': [(4, self.interviewer_id.user_id.partner_id.id)] if self.interviewer_id.user_id else [],
+        })
+
+        # Tạo record interview
+        interview = self.env['forher.interview'].create({
+            'applicant_id': self.applicant_id.id,
+            'interview_date': event.start,
+            'interviewer_id': self.interviewer_id.id,
+            'location': self.location,
+            'notes': self.notes or 'Tạo từ wizard',
+        })
+
+        # Cập nhật trạng thái ứng viên
+        self.applicant_id.state = 'interview_scheduled'
+        self.applicant_id.message_post(body=_("Ứng viên đã được lên lịch phỏng vấn: %s") % event.name)
+
+        return {
+            'name': _('Phỏng vấn'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'forher.interview',
+            'view_mode': 'form',
+            'res_id': interview.id,
+            'target': 'current',
+        }
+

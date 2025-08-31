@@ -10,13 +10,6 @@
             <field name="target">new</field>
         </record>
 
-        <!-- Menu mở wizard -->
-        <menuitem id="menu_recruitment_request_wizard"
-                  name="Tạo yêu cầu"
-                  parent="menu_forher_root"
-                  action="action_recruitment_request_wizard"
-                  sequence="10"/>
-
         <!-- ================= KANBAN ================= -->
         <record id="view_recruitment_request_kanban" model="ir.ui.view">
             <field name="name">recruitment.request.kanban</field>
@@ -35,7 +28,7 @@
                             <div class="o_kanban_record">
                                 <strong><field name="name"/></strong>
                                 <div><field name="position"/></div>
-                                <div><field name="company_id" string="Công ty con"/></div>
+                                <div><field name="company_id" string="Công ty con" options="{'no_create': True}" domain="[('parent_id','!=',False)]"/></div>
                                 <div>Số lượng: <field name="number_of_positions"/></div>
 
                                 <!-- Progress bar -->
@@ -96,7 +89,7 @@
                 <search string="Yêu cầu tuyển dụng">
                     <field name="name"/>
                     <field name="create_date"/>
-                    <field name="company_id" string="Công ty con"/>
+                    <field name="company_id" string="Công ty con" domain="[('parent_id','!=',False)]"/>
                     <!-- Filter trạng thái -->
                     <filter name="draft" string="Nháp" domain="[('state','=','draft')]"/>
                     <filter name="submitted" string="Đã gửi" domain="[('state','=','submitted')]"/>
@@ -115,12 +108,10 @@
                 <list string="Danh sách yêu cầu" create="false" delete="false" default_order="create_date desc">
                     <field name="name"/>
                     <field name="position"/>
-                    <field name="company_id" string="Chi nhánh"/>
+                    <field name="company_id" string="Chi nhánh" domain="[('parent_id','!=',False)]"/>
                     <field name="number_of_positions"/>
                     <field name="salary_budget"/>
-                    <field name="state" widget="statusbar"
-                           options="{'clickable': False,
-                                     'statusbar_visible': ['draft','submitted','approved','rejected']}"/>
+                    <field name="state" readonly="1"/>
                 </list>
             </field>
         </record>
@@ -150,7 +141,7 @@
                             <div class="o_inner_group col-lg-6">
                                 <field name="name"/>
                                 <field name="position"/>
-                                <field name="company_id" string="Công ty con"/>
+                                <field name="company_id" string="Công ty con" domain="[('parent_id','!=',False)]"/>
                                 <field name="number_of_positions"/>
                             </div>
                             <div class="o_inner_group col-lg-6">
@@ -186,7 +177,7 @@
                         <group>
                             <field name="name"/>
                             <field name="position"/>
-                            <field name="company_id" string="Chi nhánh"/>
+                            <field name="company_id" string="Chi nhánh" domain="[('parent_id','!=',False)]"/>
                             <field name="number_of_positions"/>
                             <field name="salary_budget"/>
                             <field name="required_skills"/>

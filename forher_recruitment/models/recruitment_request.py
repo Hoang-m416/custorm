@@ -8,11 +8,13 @@ class RecruitmentRequest(models.Model):
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = "id desc"
 
+    # Chỉ chọn công ty con (subcompany)
     company_id = fields.Many2one(
         'res.company',
         string='Chi nhánh',
         required=True,
-        index=True
+        index=True,
+        domain=[('parent_id', '!=', False)],  # ✅ chỉ lấy công ty con
     )
     employee_id = fields.Many2one("hr.employee", string="Requested By")
 
@@ -153,18 +155,23 @@ class RecruitmentRequestWizard(models.TransientModel):
 
     name = fields.Char("Tên yêu cầu", required=True)
     position = fields.Char("Vị trí", required=True)
-    company_id = fields.Many2one('res.company', string="Chi nhánh", required=True)  
+    company_id = fields.Many2one(
+        'res.company',
+        string="Chi nhánh",
+        required=True,
+        domain=[('parent_id', '!=', False)],  # ✅ chỉ chọn công ty con
+    )
     number_of_positions = fields.Integer("Số lượng", required=True, default=1)
     salary_budget = fields.Float("Ngân sách lương")
     required_skills = fields.Text("Kỹ năng yêu cầu")
     job_description = fields.Text("Mô tả công việc")
 
+    # --- Tạo nháp ---
     def action_save_draft(self):
-        """Tạo yêu cầu ở trạng thái nháp"""
         self.env['recruitment.request'].create({
             'name': self.name,
             'position': self.position,
-            'company_id': self.company_id.id,   # ✅ sửa lại
+            'company_id': self.company_id.id,
             'number_of_positions': self.number_of_positions,
             'salary_budget': self.salary_budget,
             'required_skills': self.required_skills,
@@ -178,12 +185,12 @@ class RecruitmentRequestWizard(models.TransientModel):
             'target': 'current',
         }
 
+    # --- Tạo và gửi duyệt ---
     def action_submit(self):
-        """Tạo yêu cầu và gửi duyệt luôn"""
         self.env['recruitment.request'].create({
             'name': self.name,
             'position': self.position,
-            'company_id': self.company_id.id,   
+            'company_id': self.company_id.id,
             'number_of_positions': self.number_of_positions,
             'salary_budget': self.salary_budget,
             'required_skills': self.required_skills,

@@ -73,22 +73,6 @@ class HrEmployee(models.Model):
         string='Hồ sơ nhân viên'
     )
 
-    # ================= Kiểm tra các field bắt buộc =================
-    @api.constrains('work_phone')
-    def _check_required_personal_bank_fields(self):
-        for rec in self:
-            missing_fields = []
-            for field_name, label in [
-                ('work_phone','Số điện thoại'),
-            ]:
-                if not getattr(rec, field_name):
-                    missing_fields.append(label)
-            if missing_fields:
-                message = "<b>Vui lòng điền đầy đủ các thông tin trước khi lưu:</b><br/>"
-                for field_label in missing_fields:
-                    message += f"<span style='color:red;'>❌ {field_label}</span><br/>"
-                raise ValidationError(message)
-
     # ================= Hàm chuyển trạng thái =================
     def action_set_active(self):
         self.state = 'active'
@@ -163,11 +147,11 @@ class ResCompany(models.Model):
         compute='_compute_employee_count'
     )
 
-    # Compute manager_id dựa vào trường selection 'r' trong hr.employee
-    @api.depends('employee_ids', 'employee_ids.r')
+    # Compute manager_id dựa vào trường selection 'position' trong hr.employee
+    @api.depends('employee_ids', 'employee_ids.position')
     def _compute_manager_id(self):
         for company in self:
-            manager = company.employee_ids.filtered(lambda e: e.r == 'manager')
+            manager = company.employee_ids.filtered(lambda e: e.position == 'manager')
             company.manager_id = manager[:1].id if manager else False
 
     # Compute số lượng nhân viên

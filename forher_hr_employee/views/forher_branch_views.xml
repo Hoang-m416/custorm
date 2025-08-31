@@ -1,49 +1,42 @@
 <odoo>
     <data noupdate="0">
 
-        <!-- ================= Action Chi nhánh (Company con) ================= -->
-        <record id="action_forher_company_kanban" model="ir.actions.act_window">
-            <field name="name">Chi nhánh</field>
-            <field name="res_model">res.company</field>
-            <field name="view_mode">kanban,form</field>
-            <field name="domain">[('parent_id', '!=', False)]</field>
-            <field name="view_id" ref="view_forher_company_kanban"/>
-        </record>
-
         <!-- ================= Kanban view cho Company (Chi nhánh) ================= -->
         <record id="view_forher_company_kanban" model="ir.ui.view">
-            <field name="name">forher.company.kanban</field>
+            <field name="name">forher.company.kanban.simple</field>
             <field name="model">res.company</field>
             <field name="arch" type="xml">
-               <kanban class="o_kanban_example">
+                <kanban class="o_kanban_example">
                     <field name="name"/>
-                    <field name="manager_id"/>
                     <field name="employee_count"/>
+
                     <templates>
                         <t t-name="kanban-box">
                             <div class="oe_kanban_global_click">
                                 <strong><t t-esc="record.name.value"/></strong>
-                                <div>
-                                    <span>Quản lý: 
-                                        <t t-if="record.manager_id.value">
-                                            <t t-esc="record.manager_id.value"/>
-                                        </t>
-                                        <t t-else="">Chưa có</t>
-                                    </span>
-                                </div>
                                 <div class="mt-2">
                                     <button type="object"
                                             name="action_view_employees"
                                             class="btn btn-primary btn-sm">
-                                        <field name="employee_count" widget="statinfo"/>
+                                        <span>
+                                            <t t-esc="record.employee_count.value or 0"/> Nhân viên
+                                        </span>
                                     </button>
                                 </div>
                             </div>
                         </t>
                     </templates>
                 </kanban>
-
             </field>
+        </record>
+
+        <!-- ================= Action Chi nhánh (Company con) ================= -->
+        <record id="action_forher_company_kanban" model="ir.actions.act_window">
+            <field name="name">Chi nhánh</field>
+            <field name="res_model">res.company</field>
+            <field name="view_mode">kanban,form</field>
+            <field name="domain">[('parent_id','!=',False)]</field>
+            <field name="view_id" ref="view_forher_company_kanban"/>
         </record>
 
     </data>

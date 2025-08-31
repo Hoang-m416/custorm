@@ -28,28 +28,29 @@
             </field>
         </record>
 
-        <!-- Form view -->
-        <record id="view_employee_type_form" model="ir.ui.view">
-            <field name="name">employee.type.form</field>
+        <!-- List view -->
+        <record id="view_employee_type_list" model="ir.ui.view">
+            <field name="name">employee.type.list</field>
             <field name="model">employee.type</field>
             <field name="arch" type="xml">
-                <form string="Loại nhân viên">
-                    <sheet>
-                        <group>
-                            <field name="name"/>
-                            <field name="code"/>
-                        </group>
-                        <div class="oe_button_box" name="button_box">
-                            <button type="object"
-                                    name="action_view_employees"
-                                    class="oe_stat_button"
-                                    icon="fa-users">
-                                <field name="employee_count" widget="statinfo"/>
-                            </button>
-                        </div>
-                    </sheet>
-                </form>
+                <list string="Loại nhân viên">
+                    <field name="name"/>
+                    <field name="code"/>
+                    <field name="employee_count"/>
+                </list>
             </field>
+        </record>
+
+        <!-- Action -->
+        <record id="action_employee_type" model="ir.actions.act_window">
+            <field name="name">Loại nhân viên</field>
+            <field name="res_model">employee.type</field>
+            <field name="view_mode">kanban,list</field>
+            <field name="view_ids" eval="[
+                (5,0,0),
+                (0,0,{'view_mode':'kanban','view_id':ref('view_employee_type_kanban')}),
+                (0,0,{'view_mode':'list','view_id':ref('view_employee_type_list')})
+            ]"/>
         </record>
     </data>
 </odoo>
