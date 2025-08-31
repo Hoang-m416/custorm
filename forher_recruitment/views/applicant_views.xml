@@ -189,7 +189,7 @@
                             options="{'preview_image': False}"/>
                         
                         <!-- Tên file hiển thị -->
-                        <field name="resume_filename" readonly="1"/>
+                        <field name="resume_filename"/>
                     </group>
                 </sheet>
 
