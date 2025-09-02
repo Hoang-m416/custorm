@@ -49,15 +49,34 @@ class HrEmployee(models.Model):
             emp = self.env['hr.employee'].search([('user_id','=',user.id)], limit=1)
             rec.current_user_position = emp.position if emp else False
 
-    # Thông tin hợp đồng
-    contract_type = fields.Selection([
-        ('full_time','Full-time'),
-        ('part_time','Part-time'),
-        ('temporary','Temporary')
-    ], 'Loại hợp đồng')
-    contract_start = fields.Date('Ngày bắt đầu')
-    contract_end = fields.Date('Ngày kết thúc')
-    salary = fields.Float('Mức lương')
+     # Liên kết với ForHer Contract
+    forher_contract_ids = fields.One2many(
+        'forher.hr.contract',
+        'employee_id',
+        string='Hợp đồng ForHer'
+    )
+
+    # Field tương thích với module hr_contract
+    forher_contract_id = fields.Many2one(
+        'forher.hr.contract',
+        string='Hợp đồng hiện tại (ForHer)',
+        compute='_compute_current_forher_contract',
+        store=True
+    )
+    
+    # Optional: chỉ tính hợp đồng đang chạy
+    current_forher_contract_id = fields.Many2one(
+        'forher.hr.contract',
+        string='Hợp đồng hiện tại',
+        compute='_compute_current_forher_contract',
+        store=True
+    )
+
+    @api.depends('forher_contract_ids', 'forher_contract_ids.state')
+    def _compute_current_forher_contract(self):
+        for emp in self:
+            contracts = emp.forher_contract_ids.filtered(lambda c: c.state in ['open', 'waiting_approval'])
+            emp.current_forher_contract_id = contracts[:1] if contracts else False
 
     # Thông tin ngân hàng
     bank_account = fields.Char('Tài khoản ngân hàng')

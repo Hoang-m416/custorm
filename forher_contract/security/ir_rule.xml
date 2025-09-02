@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- IR Rule: Nhân viên chỉ xem được hợp đồng của mình -->
+        <record id="forher_hr_contract_employee_rule" model="ir.rule">
+            <field name="name">Employee can only see own contracts</field>
+            <field name="model_id" ref="model_forher_hr_contract"/>
+            <field name="domain_force">[('employee_id.user_id', '=', user.id)]</field>
+            <field name="groups" eval="[(4, ref('forher_company_overview.forher_group_employee'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- IR Rule: Manager có thể xem và chỉnh sửa hợp đồng -->
+        <record id="forher_hr_contract_user_rule" model="ir.rule">
+            <field name="name">HR User can manage contracts</field>
+            <field name="model_id" ref="model_forher_hr_contract"/>
+            <field name="domain_force">[('company_id', '=', user.company_id.id)]</field>
+            <field name="groups" eval="[(4, ref('forher_company_overview.forher_group_branch_manager'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <!-- IR Rule: Có thể xem tất cả hợp đồng -->
+        <record id="forher_hr_contract_manager_rule" model="ir.rule">
+            <field name="name">HR Manager can see all contracts</field>
+            <field name="model_id" ref="model_forher_hr_contract"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="groups" eval="[(4, ref('forher_company_overview.forher_group_board'))]"/>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+    </data>
+</odoo>

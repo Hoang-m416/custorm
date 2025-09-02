@@ -149,7 +149,7 @@
                             <div class="o_inner_group col-lg-6">
                                 <field name="name"/>
                                 <field name="position"/>
-                                <field name="company_id" string="Công ty con" domain="[('parent_id','!=',False)]"/>
+                                <field name="company_id" string="Chi nhánh" domain="[('parent_id','!=',False)]"/>
                                 <field name="number_of_positions"/>
                             </div>
                             <div class="o_inner_group col-lg-6">

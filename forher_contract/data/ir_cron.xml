@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="forher_contract_expiry_check" model="ir.cron">
+            <field name="name">Check Expiring Contracts Monthly</field>
+            <field name="model_id" ref="model_forher_hr_contract"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_check_expiring_contracts()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">months</field>
+        </record>
+
+        <record id="forher_automatically_expire_contracts" model="ir.cron">
+            <field name="name">CONTRACT: Automatically expire contracts</field>
+            <field name="model_id" ref="model_forher_hr_contract"/>
+            <field name="state">code</field>
+            <field name="code">model._cron_auto_expire_contracts()</field>
+            <field name="interval_number">1</field>
+            <field name="interval_type">days</field>
+        </record>
+    </data>
+</odoo>

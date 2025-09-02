@@ -12,9 +12,7 @@
                     <field name="state" widget="statusbar" 
                            statusbar_visible="active,suspended,resigned"
                            options="{'clickable': True}"
-                           groups="forher_company_overview.forher_group_board,
-                                   forher_company_overview.forher_group_branch_manager,
-                                   base.group_system"/>
+                           groups="forher_company_overview.forher_group_board,forher_company_overview.forher_group_branch_manager,base.group_system"/>
                 </header>
                 
                 <!-- Thêm employee_code ngay sau work_phone -->
@@ -61,20 +59,13 @@
                             <field name="employee_type_id"/>
                         </group>
 
-                        <group string="Thông tin hợp đồng">
-                            <field name="contract_type"/>
-                            <field name="contract_start"/>
-                            <field name="contract_end"/>
-                            <field name="salary"/>
-                        </group>
-
                         <group string="Thông tin ngân hàng">
                             <field name="bank_account"/>
                             <field name="bank_name"/>
                         </group>
                     </page>
 
-                    <!-- Page "Hồ sơ nhân viên" lên ngay sau thông tin cá nhân -->
+                    <!-- Page "Hồ sơ nhân viên" -->
                     <page string="Hồ sơ nhân viên" sequence="2">
                         <field name="hr_employee_document_ids">
                             <list editable="bottom">
@@ -92,6 +83,24 @@
                                 </group>
                             </form>
                         </field>
+                    </page>
+
+                    <page string="Hợp đồng hiện tại" sequence="2">
+                        <group string="Thông tin hợp đồng">
+                            <field name="forher_contract_id" readonly="1">
+                                <form string="Hợp đồng hiện tại">
+                                    <group>
+                                        <field name="name"/>
+                                        <field name="employee_id" readonly="1"/>
+                                        <field name="job_id" readonly="1"/>
+                                        <field name="company_id" readonly="1"/>
+                                        <field name="date_start" readonly="1"/>
+                                        <field name="date_end" readonly="1"/>
+                                        <field name="state" readonly="1"/>
+                                    </group>
+                                </form>
+                            </field>
+                        </group>
                     </page>
                 </xpath>
 

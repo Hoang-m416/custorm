@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Contract Report list View -->
+        <record id="forher_hr_contract_report_list_view" model="ir.ui.view">
+            <field name="name">forher.hr.contract.report.list</field>
+            <field name="model">forher.hr.contract.report</field>
+            <field name="arch" type="xml">
+                <list string="Contract Statistics" create="false" edit="false" delete="false">
+                    <field name="employee_name"/>
+                    <field name="employee_code"/>
+                    <field name="contract_name"/>
+                    <field name="state" decoration-success="state == 'open'" decoration-warning="state == 'waiting_approval'" decoration-danger="state in ['close', 'cancel']"/>
+                    <field name="department_id"/>
+                    <field name="job_id"/>
+                    <field name="date_start"/>
+                    <field name="date_end"/>
+                    <field name="days_to_expiry"/>
+                    <field name="wage" sum="Total Wage"/>
+                    <field name="wage_range"/>
+                    <field name="contract_type"/>
+                    <field name="company_id"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Contract Report Pivot View -->
+        <record id="forher_hr_contract_report_pivot_view" model="ir.ui.view">
+            <field name="name">forher.hr.contract.report.pivot</field>
+            <field name="model">forher.hr.contract.report</field>
+            <field name="arch" type="xml">
+                <pivot string="Contract Analysis" sample="1">
+                    <field name="state" type="col"/>
+                    <field name="department_id" type="row"/>
+                    <field name="total_contracts" type="measure"/>
+                    <field name="wage" type="measure"/>
+                </pivot>
+            </field>
+        </record>
+
+        <!-- Contract Report Graph View -->
+        <record id="forher_hr_contract_report_graph_view" model="ir.ui.view">
+            <field name="name">forher.hr.contract.report.graph</field>
+            <field name="model">forher.hr.contract.report</field>
+            <field name="arch" type="xml">
+                <graph string="Contract Statistics" type="bar" sample="1">
+                    <field name="state"/>
+                    <field name="total_contracts" type="measure"/>
+                </graph>
+            </field>
+        </record>
+
+        <!-- Contract Report Search View -->
+        <record id="forher_hr_contract_report_search_view" model="ir.ui.view">
+            <field name="name">forher.hr.contract.report.search</field>
+            <field name="model">forher.hr.contract.report</field>
+            <field name="arch" type="xml">
+                <search string="Contract Statistics">
+                    <field name="employee_name"/>
+                    <field name="employee_code"/>
+                    <field name="contract_name"/>
+                    <field name="department_id"/>
+                    <field name="job_id"/>
+                    <field name="company_id"/>
+
+                    <filter string="Active Contracts" name="active" domain="[('state', '=', 'open')]"/>
+                    <filter string="Pending Approval" name="pending" domain="[('state', '=', 'waiting_approval')]"/>
+                    <filter string="Expired Contracts" name="expired" domain="[('state', '=', 'close')]"/>
+                    <filter string="Cancelled Contracts" name="cancelled" domain="[('state', '=', 'cancel')]"/>
+
+                    <separator/>
+                    <filter string="Expiring Soon (30 days)" name="expiring_soon" domain="[('days_to_expiry', '&lt;=', 30), ('days_to_expiry', '&gt;=', 0)]"/>
+                    <filter string="Expired" name="already_expired" domain="[('days_to_expiry', '&lt;', 0)]"/>
+
+                    <separator/>
+                    <filter string="High Salary (&gt;30M)" name="high_salary" domain="[('wage_range', 'in', ['30-50', '50+'])]"/>
+                    <filter string="Medium Salary (10-30M)" name="medium_salary" domain="[('wage_range', 'in', ['10-20', '20-30'])]"/>
+                    <filter string="Low Salary (&lt;10M)" name="low_salary" domain="[('wage_range', '=', '0-10')]"/>
+
+                    <separator/>
+                    <filter string="This Year" name="this_year" domain="[('year', '=', context_today().strftime('%Y'))]"/>
+                    <filter string="This Month" name="this_month" domain="[('month', '=', context_today().strftime('%Y-%m'))]"/>
+
+                    <group expand="0" string="Group By">
+                        <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                        <filter string="Department" name="group_department" context="{'group_by': 'department_id'}"/>
+                        <filter string="Job Position" name="group_job" context="{'group_by': 'job_id'}"/>
+                        <filter string="Company" name="group_company" context="{'group_by': 'company_id'}"/>
+                        <filter string="Wage Range" name="group_wage_range" context="{'group_by': 'wage_range'}"/>
+                        <filter string="Contract Type" name="group_contract_type" context="{'group_by': 'contract_type'}"/>
+
+                        <separator/>
+                        <filter string="Year" name="group_year" context="{'group_by': 'year'}"/>
+                        <filter string="Month" name="group_month" context="{'group_by': 'month'}"/>
+                        <filter string="Quarter" name="group_quarter" context="{'group_by': 'quarter'}"/>
+                    </group>
+                </search>
+            </field>
+        </record>
+
+<!--        &lt;!&ndash; Dashboard View for Contract Statistics &ndash;&gt;-->
+<!--        <record id="forher_hr_contract_dashboard_view" model="ir.ui.view">-->
+<!--            <field name="name">forher.hr.contract.dashboard</field>-->
+<!--            <field name="model">forher.hr.contract.report</field>-->
+<!--            <field name="arch" type="xml">-->
+<!--                <dashboard>-->
+<!--                    <view type="graph" ref="forher_hr_contract_report_graph_view"/>-->
+<!--                    <group>-->
+<!--                        <group>-->
+<!--                            <aggregate name="total_contracts" field="total_contracts" help="Total number of contracts"/>-->
+<!--                            <aggregate name="active_contracts" field="active_contracts" help="Currently active contracts"/>-->
+<!--                            <aggregate name="pending_contracts" field="pending_contracts" help="Contracts waiting for approval"/>-->
+<!--                        </group>-->
+<!--                        <group>-->
+<!--                            <aggregate name="expired_contracts" field="expired_contracts" help="Expired contracts"/>-->
+<!--                            <aggregate name="avg_wage" field="wage" help="Average wage across all contracts"/>-->
+<!--                        </group>-->
+<!--                    </group>-->
+<!--                    <view type="pivot" ref="forher_hr_contract_report_pivot_view"/>-->
+<!--                </dashboard>-->
+<!--            </field>-->
+<!--        </record>-->
+
+        <!-- Contract Report Action -->
+        <record id="forher_hr_contract_report_action" model="ir.actions.act_window">
+            <field name="name">Contract Statistics</field>
+            <field name="res_model">forher.hr.contract.report</field>
+            <field name="view_mode">graph,pivot,list</field>
+            <field name="view_id" ref="forher_hr_contract_report_graph_view"/>
+            <field name="search_view_id" ref="forher_hr_contract_report_search_view"/>
+            <field name="context">{
+                'search_default_group_state': 1,
+                'search_default_this_year': 1
+            }</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Contract Statistics Dashboard
+                </p>
+                <p>
+                    Analyze your contract data with comprehensive statistics including:
+                    <br/>• Contract status distribution
+                    <br/>• Department-wise analysis
+                    <br/>• Salary range breakdown
+                    <br/>• Expiry tracking
+                    <br/>• Temporal trends
+                </p>
+            </field>
+        </record>
+
+        <!-- Contract Expiry Report Action -->
+        <record id="forher_hr_contract_expiry_report_action" model="ir.actions.act_window">
+            <field name="name">Contract Expiry Report</field>
+            <field name="res_model">forher.hr.contract.report</field>
+            <field name="view_mode">list,graph,pivot</field>
+            <field name="view_id" ref="forher_hr_contract_report_list_view"/>
+            <field name="domain">[('state', '=', 'open'), ('date_end', '!=', False)]</field>
+            <field name="context">{
+                'search_default_expiring_soon': 1
+            }</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Contract Expiry Tracking
+                </p>
+                <p>
+                    Monitor contracts that are approaching their expiry dates.
+                    Take proactive action for renewals or terminations.
+                </p>
+            </field>
+        </record>
+
+        <!-- Salary Analysis Report Action -->
+        <record id="forher_hr_contract_salary_analysis_action" model="ir.actions.act_window">
+            <field name="name">Salary Analysis</field>
+            <field name="res_model">forher.hr.contract.report</field>
+            <field name="view_mode">pivot,graph,list</field>
+            <field name="view_id" ref="forher_hr_contract_report_pivot_view"/>
+            <field name="context">{
+                'search_default_group_department': 1,
+                'search_default_group_wage_range': 1,
+                'pivot_measures': ['wage'],
+                'pivot_column_groupby': ['wage_range'],
+                'pivot_row_groupby': ['department_id']
+            }</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Salary Analysis Dashboard
+                </p>
+                <p>
+                    Analyze salary distribution across departments, positions, and contract types.
+                    Identify salary trends and compensation patterns.
+                </p>
+            </field>
+        </record>
+    </data>
+</odoo>

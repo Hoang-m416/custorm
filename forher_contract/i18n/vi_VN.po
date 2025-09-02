@@ -1,0 +1,493 @@
+# Translation template for Odoo 18.0
+# This file contains the translation of the following modules:
+#	* forher_contract
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-09-02 10:00+0000\n"
+"PO-Revision-Date: 2025-09-02 10:00+0000\n"
+"Last-Translator: ForHer IT <admin@forher.com>\n"
+"Language-Team: Vietnamese\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: vi\n"
+
+#. module: forher_contract
+#: model:ir.model,name:forher_contract.model_forher_hr_contract
+msgid "ForHer HR Contract"
+msgstr "Hợp đồng lao động ForHer"
+
+#. module: forher_contract
+#: model:ir.model.fields,field_description:forher_contract.field_forher_hr_contract__state
+msgid "Status"
+msgstr "Trạng thái"
+
+#. module: forher_contract
+#: model:ir.model.fields.selection,name:forher_contract.selection__forher_hr_contract__state__draft
+msgid "New"
+msgstr "Mới"
+
+#. module: forher_contract
+#: model:ir.model.fields.selection,name:forher_contract.selection__forher_hr_contract__state__waiting_approval
+msgid "Waiting for Approval"
+msgstr "Chờ phê duyệt"
+
+#. module: forher_contract
+#: model:ir.model.fields.selection,name:forher_contract.selection__forher_hr_contract__state__open
+msgid "Running"
+msgstr "Đang chạy"
+
+#. module: forher_contract
+#: model:ir.model.fields.selection,name:forher_contract.selection__forher_hr_contract__state__close
+msgid "Expired"
+msgstr "Đã hết hạn"
+
+#. module: forher_contract
+#: model:ir.model.fields.selection,name:forher_contract.selection__forher_hr_contract__state__cancel
+msgid "Cancelled"
+msgstr "Đã hủy"
+
+#. module: forher_contract
+#: model:ir.actions.act_window,name:forher_contract.forher_hr_contract_action
+#: model:ir.ui.menu,name:forher_contract.forher_hr_contract_menu
+msgid "Contracts"
+msgstr "Hợp đồng"
+
+#. module: forher_contract
+#: model:ir.ui.menu,name:forher_contract.forher_contract_main_menu
+msgid "ForHer Contract"
+msgstr "Hợp đồng ForHer"
+
+#. module: forher_contract
+#: model:ir.ui.menu,name:forher_contract.forher_hr_employee_menu
+msgid "Employee"
+msgstr "Nhân viên"
+
+#. module: forher_contract
+#: model:ir.model.fields,field_description:forher_contract.field_forher_hr_contract__name
+msgid "Contract Name"
+msgstr "Tên hợp đồng"
+
+#. module: forher_contract
+#: model:ir.model.fields,field_description:forher_contract.field_forher_hr_contract__employee_id
+msgid "Employee"
+msgstr "Nhân viên"
+
+#. module: forher_contract
+#: model:ir.model.fields,field_description:forher_contract.field_forher_hr_contract__job_id
+msgid "Job Position"
+msgstr "Vị trí công việc"
+
+#. module: forher_contract
+#: model:ir.model.fields,field_description:forher_contract.field_forher_hr_contract__department_id
+msgid "Department"
+msgstr "Phòng ban"
+
+#. module: forher_contract
+#: model:ir.model.fields,field_description:forher_contract.field_forher_hr_contract__date_start
+msgid "Start Date"
+msgstr "Ngày bắt đầu"
+
+#. module: forher_contract
+#: model:ir.model.fields,field_description:forher_contract.field_forher_hr_contract__date_end
+msgid "End Date"
+msgstr "Ngày kết thúc"
+
+#. module: forher_contract
+#: model:ir.model.fields,field_description:forher_contract.field_forher_hr_contract__wage
+msgid "Wage"
+msgstr "Lương"
+
+#. module: forher_contract
+#: model:ir.model.fields,field_description:forher_contract.field_forher_hr_contract__company_id
+msgid "Company"
+msgstr "Công ty"
+
+#. module: forher_contract
+#: model:ir.model.fields,field_description:forher_contract.field_forher_hr_contract__active
+msgid "Active"
+msgstr "Hoạt động"
+
+#. module: forher_contract
+#: model:ir.model.fields,field_description:forher_contract.field_forher_hr_contract__create_uid
+msgid "Created by"
+msgstr "Được tạo bởi"
+
+#. module: forher_contract
+#: model:ir.model.fields,field_description:forher_contract.field_forher_hr_contract__create_date
+msgid "Created on"
+msgstr "Ngày tạo"
+
+#. module: forher_contract
+#: model:ir.model.fields,field_description:forher_contract.field_forher_hr_contract__write_uid
+msgid "Last Updated by"
+msgstr "Cập nhật cuối bởi"
+
+#. module: forher_contract
+#: model:ir.model.fields,field_description:forher_contract.field_forher_hr_contract__write_date
+msgid "Last Updated on"
+msgstr "Cập nhật cuối vào"
+
+#. module: forher_contract
+#: model:ir.model.fields,field_description:forher_contract.field_forher_hr_contract__message_ids
+msgid "Messages"
+msgstr "Tin nhắn"
+
+#. module: forher_contract
+#: model:ir.model.fields,field_description:forher_contract.field_forher_hr_contract__message_follower_ids
+msgid "Followers"
+msgstr "Người theo dõi"
+
+#. module: forher_contract
+#: model:ir.model.fields,field_description:forher_contract.field_forher_hr_contract__message_needaction
+msgid "Action Needed"
+msgstr "Cần hành động"
+
+#. module: forher_contract
+#: model:ir.model.fields,field_description:forher_contract.field_forher_hr_contract__message_has_error
+msgid "Message Delivery error"
+msgstr "Lỗi gửi tin nhắn"
+
+#. module: forher_contract
+#: model:ir.model.fields,field_description:forher_contract.field_forher_hr_contract__message_attachment_count
+msgid "Attachment Count"
+msgstr "Số lượng tệp đính kèm"
+
+#. module: forher_contract
+#: model:ir.model.fields,field_description:forher_contract.field_forher_hr_contract__activity_ids
+msgid "Activities"
+msgstr "Hoạt động"
+
+#. module: forher_contract
+#: model:ir.model.fields,field_description:forher_contract.field_forher_hr_contract__activity_state
+msgid "Activity State"
+msgstr "Trạng thái hoạt động"
+
+#. module: forher_contract
+#: model:ir.model.fields,field_description:forher_contract.field_forher_hr_contract__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr "Trang trí ngoại lệ hoạt động"
+
+#. module: forher_contract
+#: model:ir.model.fields,field_description:forher_contract.field_forher_hr_contract__activity_exception_icon
+msgid "Icon"
+msgstr "Biểu tượng"
+
+#. module: forher_contract
+#: model:ir.model.fields,field_description:forher_contract.field_forher_hr_contract__activity_type_icon
+msgid "Activity Type Icon"
+msgstr "Biểu tượng loại hoạt động"
+
+#. module: forher_contract
+#: model:ir.model.fields,field_description:forher_contract.field_forher_hr_contract__active_employee
+msgid "Active Employee"
+msgstr "Nhân viên đang hoạt động"
+
+#. module: forher_contract
+#: model:ir.ui.view,arch_db:forher_contract.forher_hr_contract_form_view
+msgid "Submit for Approval"
+msgstr "Gửi để phê duyệt"
+
+#. module: forher_contract
+#: model:ir.ui.view,arch_db:forher_contract.forher_hr_contract_form_view
+msgid "Approve"
+msgstr "Phê duyệt"
+
+#. module: forher_contract
+#: model:ir.ui.view,arch_db:forher_contract.forher_hr_contract_form_view
+msgid "Reject"
+msgstr "Từ chối"
+
+#. module: forher_contract
+#: model:ir.ui.view,arch_db:forher_contract.forher_hr_contract_form_view
+msgid "Contract Information"
+msgstr "Thông tin hợp đồng"
+
+#. module: forher_contract
+#: model:ir.ui.view,arch_db:forher_contract.forher_hr_contract_form_view
+msgid "Contract Details"
+msgstr "Chi tiết hợp đồng"
+
+#. module: forher_contract
+#: model:ir.ui.view,arch_db:forher_contract.forher_hr_contract_form_view
+msgid "Salary Information"
+msgstr "Thông tin lương"
+
+#. module: forher_contract
+#: model:ir.ui.view,arch_db:forher_contract.forher_hr_contract_list_view
+msgid "Contract List"
+msgstr "Danh sách hợp đồng"
+
+#. module: forher_contract
+#: model:mail.template,name:forher_contract.forher_contract_approval_request_template
+msgid "Contract Approval Request"
+msgstr "Yêu cầu phê duyệt hợp đồng"
+
+#. module: forher_contract
+#: model:mail.template,name:forher_contract.forher_contract_expiry_notification_template
+msgid "Contract Expiry Notification"
+msgstr "Thông báo hợp đồng sắp hết hạn"
+
+#. module: forher_contract
+#: model:mail.template,subject:forher_contract.forher_contract_approval_request_template
+msgid "Contract Approval Request - "
+msgstr "Yêu cầu phê duyệt hợp đồng - "
+
+#. module: forher_contract
+#: model:mail.template,subject:forher_contract.forher_contract_expiry_notification_template
+msgid "Thông báo hợp đồng sắp hết hạn - "
+msgstr "Thông báo hợp đồng sắp hết hạn - "
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_approval_request_template
+msgid "Dear Board Members,"
+msgstr "Kính gửi các thành viên Hội đồng quản trị,"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_approval_request_template
+msgid "A new contract has been submitted for approval and requires your review."
+msgstr "Một hợp đồng mới đã được gửi để phê duyệt và cần sự xem xét của quý vị."
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_approval_request_template
+msgid "Contract Details:"
+msgstr "Chi tiết hợp đồng:"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_approval_request_template
+msgid "Contract Name:"
+msgstr "Tên hợp đồng:"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_approval_request_template
+msgid "Not assigned"
+msgstr "Chưa phân công"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_approval_request_template
+msgid "Not specified"
+msgstr "Chưa xác định"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_approval_request_template
+msgid "Open-ended"
+msgstr "Không thời hạn"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_approval_request_template
+msgid "Submitted by:"
+msgstr "Được gửi bởi:"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_approval_request_template
+msgid "Submission Date:"
+msgstr "Ngày gửi:"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_approval_request_template
+msgid "Please review and take appropriate action on this contract."
+msgstr "Vui lòng xem xét và thực hiện hành động thích hợp đối với hợp đồng này."
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_approval_request_template
+msgid "View Contract"
+msgstr "Xem hợp đồng"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_approval_request_template
+msgid "Best regards,"
+msgstr "Trân trọng,"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "⚠️ Thông báo hợp đồng sắp hết hạn"
+msgstr "⚠️ Thông báo hợp đồng sắp hết hạn"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "Kính gửi Quý Branch Manager,"
+msgstr "Kính gửi Quý Branch Manager,"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "Đây là thông báo tự động về hợp đồng lao động sắp hết hạn trong tháng này và cần sự chú ý của quý vị."
+msgstr "Đây là thông báo tự động về hợp đồng lao động sắp hết hạn trong tháng này và cần sự chú ý của quý vị."
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "📋 Thông tin hợp đồng:"
+msgstr "📋 Thông tin hợp đồng:"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "Tên hợp đồng:"
+msgstr "Tên hợp đồng:"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "Nhân viên:"
+msgstr "Nhân viên:"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "Chưa phân công"
+msgstr "Chưa phân công"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "Mã nhân viên:"
+msgstr "Mã nhân viên:"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "Chức vụ:"
+msgstr "Chức vụ:"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "Phòng ban:"
+msgstr "Phòng ban:"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "Chưa xác định"
+msgstr "Chưa xác định"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "Ngày bắt đầu:"
+msgstr "Ngày bắt đầu:"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "Ngày kết thúc:"
+msgstr "Ngày kết thúc:"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "Không xác định"
+msgstr "Không xác định"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "Số ngày còn lại:"
+msgstr "Số ngày còn lại:"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "ngày"
+msgstr "ngày"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "Mức lương:"
+msgstr "Mức lương:"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "Trạng thái hiện tại:"
+msgstr "Trạng thái hiện tại:"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "Đang chạy"
+msgstr "Đang chạy"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "Chờ phê duyệt"
+msgstr "Chờ phê duyệt"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "Bản nháp"
+msgstr "Bản nháp"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "📌 Hành động cần thực hiện:"
+msgstr "📌 Hành động cần thực hiện:"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "Xem xét gia hạn hợp đồng nếu cần thiết"
+msgstr "Xem xét gia hạn hợp đồng nếu cần thiết"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "Thực hiện quy trình chấm dứt hợp đồng nếu không gia hạn"
+msgstr "Thực hiện quy trình chấm dứt hợp đồng nếu không gia hạn"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "Chuẩn bị các thủ tục pháp lý liên quan"
+msgstr "Chuẩn bị các thủ tục pháp lý liên quan"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "Thông báo cho nhân viên về tình trạng hợp đồng"
+msgstr "Thông báo cho nhân viên về tình trạng hợp đồng"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "🔍 Xem chi tiết hợp đồng"
+msgstr "🔍 Xem chi tiết hợp đồng"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "Lưu ý:"
+msgstr "Lưu ý:"
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "Đây là email thông báo tự động từ hệ thống ForHer HR. Vui lòng không trả lời email này."
+msgstr "Đây là email thông báo tự động từ hệ thống ForHer HR. Vui lòng không trả lời email này."
+
+#. module: forher_contract
+#: model:mail.template,body_html:forher_contract.forher_contract_expiry_notification_template
+msgid "Hệ thống ForHer HR"
+msgstr "Hệ thống ForHer HR"
+
+#. module: forher_contract
+#: model:ir.cron,name:forher_contract.forher_contract_expiry_check_cron
+msgid "Check Expiring Contracts Monthly"
+msgstr "Kiểm tra hợp đồng sắp hết hạn hàng tháng"
+
+#. module: forher_contract
+#: code:addons/forher_contract/models/forher_hr_contract.py:0
+#, python-format
+msgid "Contract submitted for approval."
+msgstr "Hợp đồng đã được gửi để phê duyệt."
+
+#. module: forher_contract
+#: code:addons/forher_contract/models/forher_hr_contract.py:0
+#, python-format
+msgid "Contract approved and set to running."
+msgstr "Hợp đồng đã được phê duyệt và đặt thành đang chạy."
+
+#. module: forher_contract
+#: code:addons/forher_contract/models/forher_hr_contract.py:0
+#, python-format
+msgid "Contract rejected and cancelled."
+msgstr "Hợp đồng đã bị từ chối và hủy bỏ."
+
+#. module: forher_contract
+#: code:addons/forher_contract/models/forher_hr_contract.py:0
+#, python-format
+msgid "Starting monthly contract expiry check..."
+msgstr "Bắt đầu kiểm tra hợp đồng sắp hết hạn hàng tháng..."
+
+#. module: forher_contract
+#: code:addons/forher_contract/models/forher_hr_contract.py:0
+#, python-format
+msgid "No contracts expiring this month"
+msgstr "Không có hợp đồng nào hết hạn trong tháng này"
+
+#. module: forher_contract
+#: code:addons/forher_contract/models/forher_hr_contract.py:0
+#, python-format
+msgid "Monthly contract expiry check completed"
+msgstr "Hoàn thành kiểm tra hợp đồng sắp hết hạn hàng tháng"

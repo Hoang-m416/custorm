@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Main Menu -->
+        <menuitem id="forher_contract_main_menu"
+                  name="ForHer Contract"
+                  sequence="10"/>
+
+        <!-- Employee Submenu -->
+        <menuitem id="forher_hr_employee_menu"
+                  name="Employee"
+                  parent="forher_contract_main_menu"
+                  sequence="10"/>
+
+        <!-- Contract Submenu -->
+        <menuitem id="forher_hr_contract_menu"
+                  name="Contracts"
+                  parent="forher_contract_main_menu"
+                  action="forher_hr_contract_action"
+                  sequence="20"/>
+
+        <!-- Reports Submenu -->
+        <menuitem id="forher_contract_reports_menu"
+                  name="Reports"
+                  parent="forher_contract_main_menu"
+                  groups="forher_company_overview.forher_group_board"
+                  sequence="30"/>
+
+        <!-- Contract Statistics Report -->
+        <menuitem id="forher_contract_statistics_menu"
+                  name="Contract Statistics"
+                  parent="forher_contract_reports_menu"
+                  action="forher_hr_contract_report_action"
+                  sequence="10"/>
+
+        <!-- Contract Expiry Report -->
+        <menuitem id="forher_contract_expiry_menu"
+                  name="Contract Expiry Tracking"
+                  parent="forher_contract_reports_menu"
+                  action="forher_hr_contract_expiry_report_action"
+                  sequence="20"/>
+
+        <!-- Salary Analysis Report -->
+        <menuitem id="forher_contract_salary_analysis_menu"
+                  name="Salary Analysis"
+                  parent="forher_contract_reports_menu"
+                  action="forher_hr_contract_salary_analysis_action"
+                  sequence="30"/>
+    </data>
+</odoo>

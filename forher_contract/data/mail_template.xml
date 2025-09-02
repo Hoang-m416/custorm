@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Contract Approval Request Template -->
+        <record id="forher_contract_approval_request_template" model="mail.template">
+            <field name="name">Contract Approval Request</field>
+            <field name="model_id" ref="model_forher_hr_contract"/>
+            <field name="subject">Contract Approval Request - {{ object.name }}</field>
+            <field name="email_from">{{ object.create_uid.email or '' }}</field>
+            <field name="email_to">{{ ctx.get('email_to', '') }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px;">
+                    <p>Dear Board Members,</p>
+                    <p>A new contract has been submitted for approval and requires your review.</p>
+
+                    <h3>Contract Details:</h3>
+                    <ul>
+                        <li><strong>Contract Name:</strong> <t t-out="object.name"/></li>
+                        <li><strong>Employee:</strong> <t t-out="object.employee_id.name if object.employee_id else 'Not assigned'"/></li>
+                        <li><strong>Job Position:</strong> <t t-out="object.job_id.name if object.job_id else 'Not specified'"/></li>
+                        <li><strong>Department:</strong> <t t-out="object.department_id.name if object.department_id else 'Not specified'"/></li>
+                        <li><strong>Start Date:</strong> <t t-out="object.date_start if object.date_start else 'Not specified'"/></li>
+                        <li><strong>End Date:</strong> <t t-out="object.date_end if object.date_end else 'Open-ended'"/></li>
+                        <li><strong>Wage:</strong> <t t-out="object.wage if object.wage else 'Not specified'"/></li>
+                        <li><strong>Submitted by:</strong> <t t-out="object.create_uid.name"/></li>
+                        <li><strong>Submission Date:</strong> <t t-out="object.write_date.strftime('%Y-%m-%d %H:%M:%S') if object.write_date else ''"/></li>
+                    </ul>
+
+                    <p>Please review and take appropriate action on this contract.</p>
+
+                    <p>
+                        <a t-att-href="'/odoo/action-forher_contract.forher_hr_contract_action/%s' % object.id"
+                           style="background-color: #875A7B; padding: 8px 16px; text-decoration: none; color: #fff; border-radius: 5px;">
+                            View Contract
+                        </a>
+                    </p>
+
+                    <p>Best regards,<br/><t t-out="object.create_uid.name"/><br/></p>
+                </div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+        <!-- Contract Expiry Notification Template -->
+        <record id="forher_contract_expiry_notification_template" model="mail.template">
+            <field name="name">Contract Expiry Notification</field>
+            <field name="model_id" ref="model_forher_hr_contract"/>
+            <field name="subject">Thông báo hợp đồng sắp hết hạn - {{ object.name }}</field>
+            <field name="email_from">{{ object.create_uid.email or '' }}</field>
+            <field name="email_to">{{ ctx.get('email_to', '') }}</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px; font-family: Arial, sans-serif;">
+                    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px;">
+                        <h2 style="color: #dc3545; margin-top: 0;">⚠️ Thông báo hợp đồng sắp hết hạn</h2>
+                        <p>Kính gửi Quý Branch Manager,</p>
+                        <p>Đây là thông báo tự động về hợp đồng lao động sắp hết hạn trong tháng này và cần sự chú ý của quý vị.</p>
+
+                        <div style="background-color: #fff; padding: 15px; border-left: 4px solid #dc3545; margin: 20px 0; border-radius: 4px;">
+                            <h3 style="color: #dc3545; margin-top: 0;">📋 Thông tin hợp đồng:</h3>
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <tr>
+                                    <td style="padding: 8px 0; font-weight: bold; width: 180px;">Tên hợp đồng:</td>
+                                    <td style="padding: 8px 0;"><t t-out="object.name"/></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; font-weight: bold;">Nhân viên:</td>
+                                    <td style="padding: 8px 0;"><t t-out="object.employee_id.name if object.employee_id else 'Chưa phân công'"/></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; font-weight: bold;">Mã nhân viên:</td>
+                                    <td style="padding: 8px 0;"><t t-out="object.employee_id.employee_code if object.employee_id.employee_code else 'N/A'"/></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; font-weight: bold;">Chức vụ:</td>
+                                    <td style="padding: 8px 0;"><t t-out="object.job_id.name if object.job_id else 'Chưa xác định'"/></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; font-weight: bold;">Phòng ban:</td>
+                                    <td style="padding: 8px 0;"><t t-out="object.department_id.name if object.department_id else 'Chưa xác định'"/></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; font-weight: bold;">Ngày bắt đầu:</td>
+                                    <td style="padding: 8px 0;"><t t-out="object.date_start.strftime('%d/%m/%Y') if object.date_start else 'Chưa xác định'"/></td>
+                                </tr>
+                                <tr style="background-color: #ffe6e6;">
+                                    <td style="padding: 8px 0; font-weight: bold; color: #dc3545;">Ngày kết thúc:</td>
+                                    <td style="padding: 8px 0; color: #dc3545; font-weight: bold;"><t t-out="object.date_end.strftime('%d/%m/%Y') if object.date_end else 'Không xác định'"/></td>
+                                </tr>
+                                <tr style="background-color: #ffe6e6;">
+                                    <td style="padding: 8px 0; font-weight: bold; color: #dc3545;">Số ngày còn lại:</td>
+                                    <td style="padding: 8px 0; color: #dc3545; font-weight: bold;"><t t-out="ctx.get('days_until_expiry', 'N/A')"/> ngày</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; font-weight: bold;">Mức lương:</td>
+                                    <td style="padding: 8px 0;"><t t-out="'{:,.0f}'.format(object.wage) if object.wage else 'Chưa xác định'"/> VND</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 8px 0; font-weight: bold;">Trạng thái hiện tại:</td>
+                                    <td style="padding: 8px 0;">
+                                        <span t-if="object.state == 'open'" style="background-color: #28a745; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px;">Đang chạy</span>
+                                        <span t-if="object.state == 'waiting_approval'" style="background-color: #ffc107; color: black; padding: 3px 8px; border-radius: 4px; font-size: 12px;">Chờ phê duyệt</span>
+                                        <span t-if="object.state == 'draft'" style="background-color: #6c757d; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px;">Bản nháp</span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <div style="background-color: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; margin: 20px 0; border-radius: 4px;">
+                            <h4 style="color: #856404; margin-top: 0;">📌 Hành động cần thực hiện:</h4>
+                            <ul style="color: #856404; margin: 10px 0; padding-left: 20px;">
+                                <li>Xem xét gia hạn hợp đồng nếu cần thiết</li>
+                                <li>Thực hiện quy trình chấm dứt hợp đồng nếu không gia hạn</li>
+                                <li>Chuẩn bị các thủ tục pháp lý liên quan</li>
+                                <li>Thông báo cho nhân viên về tình trạng hợp đồng</li>
+                            </ul>
+                        </div>
+
+                        <div style="text-align: center; margin: 30px 0;">
+                            <a t-att-href="'/odoo/action-forher_contract.forher_hr_contract_action/%s' % object.id"
+                               style="background-color: #dc3545; padding: 12px 24px; text-decoration: none; color: #fff; border-radius: 6px; font-weight: bold; display: inline-block;">
+                                🔍 Xem chi tiết hợp đồng
+                            </a>
+                        </div>
+
+                        <hr style="border: none; border-top: 1px solid #dee2e6; margin: 30px 0;"/>
+
+                        <p style="font-size: 14px; color: #6c757d; margin-bottom: 0;">
+                            <strong>Lưu ý:</strong> Đây là email thông báo tự động từ hệ thống ForHer HR. Vui lòng không trả lời email này.
+                        </p>
+                        <p style="font-size: 14px; color: #6c757d;">
+                            Trân trọng,<br/>
+                            <strong>Hệ thống ForHer HR</strong><br/>
+                            📧 Email: hr@forher.com | 📞 Hotline: 1900-xxxx
+                        </p>
+                    </div>
+                </div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+    </data>
+</odoo>

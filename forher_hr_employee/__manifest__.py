@@ -3,8 +3,9 @@
     'version': '1.0',
     'category': 'Human Resources',
     'summary': 'Mở rộng nhân viên, chuẩn hóa hồ sơ, phân quyền theo module Forher Company Overview',
-    'depends': ['base', 'hr', 'forher_company_overview', 'mail'],
+    'depends': ['base', 'hr', 'forher_company_overview', 'mail','forher_contract'],
     'data': [
+        'security/hr_employee_security.xml',
         'security/ir.model.access.csv',
         'views/forher_branch_views.xml',
         'views/employee_type_views.xml',
