@@ -40,9 +40,11 @@
                     <attribute name="invisible">0</attribute>
                 </xpath>
 
-                <!-- Đưa page "Thông tin cá nhân & hợp đồng" lên trước -->
+                <!-- Các page custom -->
                 <xpath expr="//notebook" position="inside">
-                    <page string="Thông tin cá nhân &amp; hợp đồng" sequence="1">
+                    
+                    <!-- Page Thông tin cá nhân & công việc -->
+                    <page string="Thông tin cá nhân &amp; công việc" sequence="1">
                         <group string="Thông tin cá nhân">
                             <field name="dob"/>
                             <field name="gender"/>
@@ -57,6 +59,7 @@
                             <field name="position"/>
                             <field name="state" readonly="1"/>
                             <field name="employee_type_id"/>
+                            <field name="permission_level_id"/>
                         </group>
 
                         <group string="Thông tin ngân hàng">
@@ -65,8 +68,17 @@
                         </group>
                     </page>
 
-                    <!-- Page "Hồ sơ nhân viên" -->
-                    <page string="Hồ sơ nhân viên" sequence="2">
+                    <!-- Page Học vấn & Kinh nghiệm -->
+                    <page string="Học vấn &amp; Kinh nghiệm" sequence="2">
+                        <group>
+                            <field name="education_level"/>
+                            <field name="experience_years"/>
+                            <field name="seniority_years" readonly="1"/>
+                        </group>
+                    </page>
+
+                    <!-- Page Hồ sơ nhân viên -->
+                    <page string="Hồ sơ nhân viên" sequence="3">
                         <field name="hr_employee_document_ids">
                             <list editable="bottom">
                                 <field name="name"/>
@@ -85,23 +97,77 @@
                         </field>
                     </page>
 
-                    <page string="Hợp đồng hiện tại" sequence="2">
-                        <group string="Thông tin hợp đồng">
-                            <field name="forher_contract_id" readonly="1">
-                                <form string="Hợp đồng hiện tại">
-                                    <group>
+                    <!-- Page Hợp đồng -->
+                    <page string="Hợp đồng" sequence="4">
+                        <group string="Danh sách hợp đồng">
+                            <field name="forher_contract_ids" readonly="1">
+                                <list string="Danh sách hợp đồng">
+                                    <field name="name"/>
+                                    <field name="employee_id"/>
+                                    <field name="job_id"/>
+                                    <field name="company_id"/>
+                                    <field name="date_start"/>
+                                    <field name="date_end"/>
+                                    <field name="state"/>
+                                </list>
+                                <form string="Chi tiết hợp đồng">
+                                    <group string="Thông tin cơ bản">
                                         <field name="name"/>
+                                        <field name="state" readonly="1"/>
+                                        <field name="contract_type_id"/>
+                                    </group>
+
+                                    <group string="Chi nhánh &amp; Nhân viên">
+                                        <field name="company_id" readonly="1"/>
                                         <field name="employee_id" readonly="1"/>
                                         <field name="job_id" readonly="1"/>
-                                        <field name="company_id" readonly="1"/>
+                                    </group>
+
+                                    <group string="Thời gian hợp đồng">
                                         <field name="date_start" readonly="1"/>
                                         <field name="date_end" readonly="1"/>
-                                        <field name="state" readonly="1"/>
+                                        <field name="trial_date_end" readonly="1"/>
+                                    </group>
+
+                                    <group string="Lịch làm việc">
+                                        <field name="resource_calendar_id" readonly="1"/>
+                                    </group>
+
+                                    <group string="Thông tin lương">
+                                        <field name="wage"/>
+                                        <field name="notes"/>
                                     </group>
                                 </form>
                             </field>
                         </group>
                     </page>
+
+                    <!-- Page Khen thưởng & Kỷ luật -->
+                    <page string="Khen thưởng - Kỷ luật" sequence="5">
+                        <field name="reward_ids">
+                            <list editable="bottom">
+                                <field name="reward_type"/>
+                                <field name="description"/>
+                                <field name="date"/>
+                                <field name="value"/>
+                                <field name="note"/>
+                            </list>
+                        </field>
+                    </page>
+
+                    <!-- Page Lịch sử nâng lương -->
+                    <page string="Lịch sử nâng lương" sequence="6">
+                        <field name="salary_increase_ids">
+                            <list editable="bottom">
+                                <field name="old_salary"/>
+                                <field name="new_salary"/>
+                                <field name="criteria"/>
+                                <field name="date"/>
+                                <field name="approved_by"/>
+                            </list>
+                        </field>
+                    </page>
+
                 </xpath>
 
             </field>

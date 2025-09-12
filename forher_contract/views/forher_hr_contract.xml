@@ -7,12 +7,21 @@
             <form string="Hợp đồng nhân sự Forher">
                 <header>
                     <button name="action_submit_for_approval" string="Gửi phê duyệt" type="object"
-                            class="oe_highlight" invisible="state != 'draft'" groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board"/>
+                            class="oe_highlight" invisible="state != 'draft'" groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board,base.group_system"/>
                     <button name="action_running_contract" string="Duyệt" type="object"
-                            class="oe_highlight" invisible="state != 'waiting_approval'" groups="forher_company_overview.forher_group_board"/>
+                            class="oe_highlight" invisible="state != 'waiting_approval'" groups="forher_company_overview.forher_group_board,base.group_system"/>
                     <button name="action_reject_contract" string="Từ chối" type="object"
-                            class="oe_highlight" invisible="state != 'waiting_approval'" groups="forher_company_overview.forher_group_board"/>
-                    <field name="state" statusbar_visible="draft,waiting_approval,open,close" widget="statusbar" options="{'clickable': '1'}"/>
+                            class="oe_highlight" invisible="state != 'waiting_approval'" groups="forher_company_overview.forher_group_board,base.group_system"/>
+                    <button name="action_renew_contract" string="Gia hạn hợp đồng" type="object"
+                            class="oe_highlight" invisible="state != 'close'"
+                            groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board,base.group_system"/>
+                    <button name="action_cancel_contract" string="Hủy hợp đồng" type="object"
+                            class="oe_highlight" invisible="state == 'cancel'"
+                            groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board,base.group_system"/>
+                    <field name="state" 
+                        widget="statusbar" 
+                        statusbar_visible="draft,waiting_approval,open,close" 
+                        readonly="1"/>
                 </header>
                 <sheet>
                     <div class="oe_title">
@@ -25,7 +34,8 @@
                             <field name="company_id" string="Chi nhánh" domain="[('parent_id','!=',False)]"/>
                             <field name="employee_id" string="Nhân viên" options="{'no_create': True, 'no_open': True}"/>
                             <field name="job_id" string="Chức danh"/>
-                            <field name="state" string="Trạng thái"/>
+                            <field name="state" string="Trạng thái" readonly="1"/>
+                            <field name="contract_type_id" string="Loại hợp đồng"/>
                         </group>
                         <group string="Thời gian hợp đồng">
                             <field name="date_start" string="Ngày bắt đầu"/>
@@ -43,26 +53,34 @@
                                     <field name="structure_type_id" string="Loại cấu trúc lương"/>
                                 </group>
                                 <group string="Địa điểm làm việc">
-                                    <field name="company_id" groups="base.group_multi_company" string="Chi nhánh"/>
+                                    <field name="company_id" groups="base.group_multi_company" string="Chi nhánh" readonly="1"/>
                                 </group>
-                            </group>
-                        </page>
-                        <page string="Thông tin cá nhân" name="personal_info">
-                            <group>
+
                                 <group string="Chi tiết cá nhân">
                                     <field name="hr_responsible_id" string="Người phụ trách"/>
                                     <field name="notes" string="Ghi chú"/>
                                 </group>
                             </group>
                         </page>
-                        <page string="Điều khoản hợp đồng" name="contract_terms">
+                        
+                        <page string="Phụ cấp" name="allowances">
                             <group>
-                                <group>
-                                    <field name="contract_type_id" string="Loại hợp đồng"/>
-                                    <field name="resource_calendar_id" string="Lịch làm việc"/>
-                                </group>
+                                <field name="allowance_ids">
+                                    <list string="Danh sách phụ cấp" readonly="1">
+                                        <field name="name"/>
+                                        <field name="amount"/>
+                                    </list>
+                                    <form string="Chi tiết phụ cấp">
+                                        <group>
+                                            <field name="name"/>
+                                            <field name="amount"/>
+                                        </group>
+                                    </form>
+                                </field>
+                                <field name="total_allowance" string="Tổng phụ cấp" readonly="1"/>
                             </group>
                         </page>
+
                     </notebook>
                 </sheet>
             </form>
@@ -80,7 +98,7 @@
                 <field name="date_start" string="Ngày bắt đầu"/>
                 <field name="date_end" string="Ngày kết thúc"/>
                 <field name="wage" string="Lương"/>
-                <field name="state" string="Trạng thái"/>
+                <field name="state" string="Trạng thái" readonly="1"/>
             </list>
         </field>
     </record>

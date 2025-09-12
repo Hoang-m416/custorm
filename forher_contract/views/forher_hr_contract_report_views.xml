@@ -8,7 +8,6 @@
             <field name="arch" type="xml">
                 <list string="Contract Statistics" create="false" edit="false" delete="false">
                     <field name="employee_name"/>
-                    <field name="employee_code"/>
                     <field name="contract_name"/>
                     <field name="state" decoration-success="state == 'open'" decoration-warning="state == 'waiting_approval'" decoration-danger="state in ['close', 'cancel']"/>
                     <field name="department_id"/>
@@ -57,7 +56,6 @@
             <field name="arch" type="xml">
                 <search string="Contract Statistics">
                     <field name="employee_name"/>
-                    <field name="employee_code"/>
                     <field name="contract_name"/>
                     <field name="department_id"/>
                     <field name="job_id"/>

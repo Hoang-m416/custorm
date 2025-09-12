@@ -1,6 +1,5 @@
 from odoo import fields, models, tools, api
 
-
 class ForHerHrContractReport(models.Model):
     _name = 'forher.hr.contract.report'
     _description = 'Contract Analysis Report'
@@ -10,7 +9,6 @@ class ForHerHrContractReport(models.Model):
     # Basic Information
     employee_id = fields.Many2one('hr.employee', string='Employee', readonly=True)
     employee_name = fields.Char(string='Employee Name', readonly=True)
-    employee_code = fields.Char(string='Employee Code', readonly=True)
     contract_name = fields.Char(string='Contract Name', readonly=True)
 
     # Contract Details
@@ -71,7 +69,6 @@ class ForHerHrContractReport(models.Model):
                     row_number() OVER () AS id,
                     c.employee_id,
                     e.name AS employee_name,
-                    e.employee_code AS employee_code,
                     c.name AS contract_name,
                     c.state,
                     c.company_id,

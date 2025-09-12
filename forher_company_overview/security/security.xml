@@ -13,6 +13,12 @@
             <field name="category_id" ref="base.module_category_human_resources"/>
         </record>
 
+        <!-- Nhóm Kế toán -->
+        <record id="forher_group_accountant" model="res.groups">
+            <field name="name">Kế toán (Forher)</field>
+            <field name="category_id" ref="base.module_category_human_resources"/>
+        </record>
+
         <!-- Nhóm Nhân viên -->
         <record id="forher_group_employee" model="res.groups">
             <field name="name">Nhân viên (Forher)</field>

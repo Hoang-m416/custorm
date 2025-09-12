@@ -1,14 +1,31 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_hr_employee_board,HR Employee Board,model_hr_employee,forher_company_overview.forher_group_board,1,1,1,1
 access_hr_employee_branch_manager,HR Employee Branch Manager,model_hr_employee,forher_company_overview.forher_group_branch_manager,1,1,1,1
+access_hr_employee_accountant,HR Employee Accountant,model_hr_employee,forher_company_overview.forher_group_accountant,1,1,0,0
 access_hr_employee_employee,HR Employee Employee,model_hr_employee,forher_company_overview.forher_group_employee,1,1,0,0
+access_hr_employee_admin,HR Employee Admin,model_hr_employee,base.group_system,1,1,1,1
 
 access_hr_employee_document_board,HR Employee Document Board,model_hr_employee_document,forher_company_overview.forher_group_board,1,1,1,1
 access_hr_employee_document_branch_manager,HR Employee Document Branch Manager,model_hr_employee_document,forher_company_overview.forher_group_branch_manager,1,1,1,1
+access_hr_employee_document_accountant,HR Employee Document Accountant,model_hr_employee_document,forher_company_overview.forher_group_accountant,1,1,0,0
 access_hr_employee_document_employee,HR Employee Document Employee,model_hr_employee_document,forher_company_overview.forher_group_employee,1,1,0,0
 access_hr_employee_document_admin,HR Employee Document Admin,model_hr_employee_document,base.group_system,1,1,1,1
 
 access_employee_type_board,Employee Type Board,model_employee_type,forher_company_overview.forher_group_board,1,1,1,1
 access_employee_type_branch_manager,Employee Type Branch Manager,model_employee_type,forher_company_overview.forher_group_branch_manager,1,1,1,1
-access_employee_type_employee,Employee Type Employee,model_employee_type,forher_company_overview.forher_group_employee,1,1,0,0
-access_employee_type_admin,HR Employee Document Admin,model_employee_type,base.group_system,1,1,1,1
+access_employee_type_accountant,Employee Type Accountant,model_employee_type,forher_company_overview.forher_group_accountant,1,0,0,0
+access_employee_type_employee,Employee Type Employee,model_employee_type,forher_company_overview.forher_group_employee,1,0,0,0
+access_employee_type_admin,Employee Type Admin,model_employee_type,base.group_system,1,1,1,1
+
+access_hr_employee_reward_board,HR Employee Reward Board,model_hr_employee_reward,forher_company_overview.forher_group_board,1,1,1,1
+access_hr_employee_reward_branch_manager,HR Employee Reward Branch Manager,model_hr_employee_reward,forher_company_overview.forher_group_branch_manager,1,1,1,1
+access_hr_employee_reward_accountant,HR Employee Reward Accountant,model_hr_employee_reward,forher_company_overview.forher_group_accountant,1,1,0,0
+access_hr_employee_reward_employee,HR Employee Reward Employee,model_hr_employee_reward,forher_company_overview.forher_group_employee,1,0,0,0
+access_hr_employee_reward_admin,HR Employee Reward Admin,model_hr_employee_reward,base.group_system,1,1,1,1
+
+access_hr_salary_increase_board,HR Salary Increase Board,model_hr_salary_increase,forher_company_overview.forher_group_board,1,1,1,1
+access_hr_salary_increase_branch_manager,HR Salary Increase Branch Manager,model_hr_salary_increase,forher_company_overview.forher_group_branch_manager,1,1,1,1
+access_hr_salary_increase_accountant,HR Salary Increase Accountant,model_hr_salary_increase,forher_company_overview.forher_group_accountant,1,1,0,0
+access_hr_salary_increase_employee,HR Salary Increase Employee,model_hr_salary_increase,forher_company_overview.forher_group_employee,1,0,0,0
+access_hr_salary_increase_admin,HR Salary Increase Admin,model_hr_salary_increase,base.group_system,1,1,1,1
+

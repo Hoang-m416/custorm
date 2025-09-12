@@ -212,3 +212,54 @@ class ForHerHrContract(models.Model):
     job_id = fields.Many2one('hr.job', string='Job')
     company_id = fields.Many2one('res.company', string='Company')
     
+    renewal_count = fields.Integer(string="Renewal Count", default=0, tracking=True)
+    last_renewal_date = fields.Date(string="Last Renewal Date", readonly=True)
+
+    def action_renew_contract(self, months=12):
+        """Gia hạn hợp đồng nếu trạng thái là hết hạn hoặc hủy"""
+        for contract in self:
+            if contract.state not in ['close', 'cancel']:
+                raise ValueError(_("Chỉ có thể gia hạn khi hợp đồng đã hết hạn hoặc bị hủy."))
+
+            if not contract.date_end:
+                raise ValueError(_("Hợp đồng %s không có ngày kết thúc để gia hạn.") % contract.name)
+
+            # Tính ngày kết thúc mới
+            new_end_date = contract.date_end + timedelta(days=months * 30)
+            contract.write({
+                'date_end': new_end_date,
+                'state': 'open',
+                'renewal_count': contract.renewal_count + 1,
+                'last_renewal_date': fields.Date.today(),
+            })
+            contract.message_post(
+                body=_("Hợp đồng đã được gia hạn đến %s (Lần gia hạn #%s).") %
+                     (new_end_date.strftime("%d/%m/%Y"), contract.renewal_count)
+            )
+
+    def action_cancel_contract(self):
+        """Hủy hợp đồng thủ công"""
+        for record in self:
+            if record.state != 'cancel':
+                record.state = 'cancel'
+                record.message_post(body=_("Hợp đồng đã được hủy."))
+    
+    # Phụ cấp cho hợp đồng
+    allowance_ids = fields.One2many('forher.hr.contract.allowance', 'contract_id', string='Allowances')
+
+    # Tổng phụ cấp
+    total_allowance = fields.Float(string='Total Allowance', compute='_compute_total_allowance', store=True)
+
+    @api.depends('allowance_ids.amount')
+    def _compute_total_allowance(self):
+        for contract in self:
+            contract.total_allowance = sum(contract.allowance_ids.mapped('amount'))
+
+class ForHerHrContractAllowance(models.Model):
+    _name = 'forher.hr.contract.allowance'
+    _description = 'Contract Allowance'
+
+    name = fields.Char(string='Allowance Name', required=True)
+    amount = fields.Float(string='Amount', required=True)
+    contract_id = fields.Many2one('forher.hr.contract', string='Contract')
+

@@ -20,17 +20,26 @@ class Interview(models.Model):
     can_start_interview = fields.Boolean("Can Start Interview", compute='_compute_button_visibility')
     can_pass_fail = fields.Boolean("Can Pass/Fail", compute='_compute_button_visibility')
 
-    @api.depends('applicant_state','result')
+    @api.depends('applicant_state', 'result')
     def _compute_button_visibility(self):
         for rec in self:
             rec.can_start_interview = rec.applicant_state == 'interview_scheduled'
             rec.can_pass_fail = rec.applicant_state == 'interviewing' and rec.result not in ['pass','fail']
+
+    # --- Helper check ---
+    def _check_interviewer_permission(self, rec):
+        """Chỉ cho phép nhân viên được chỉ định làm interviewer thao tác"""
+        current_employee = self.env['hr.employee'].search([('user_id', '=', self.env.uid)], limit=1)
+        if not current_employee or rec.interviewer_id.id != current_employee.id:
+            raise UserError(_("Chỉ người phỏng vấn được chỉ định mới có quyền thực hiện thao tác này."))
 
     # --- Actions ---
     def action_start_interview(self):
         for rec in self:
             if not rec.can_start_interview:
                 raise UserError(_("Chỉ ứng viên đã lên lịch phỏng vấn mới có thể bắt đầu phỏng vấn."))
+            self._check_interviewer_permission(rec)
+
             rec.applicant_id.state = 'interviewing'
             rec.applicant_id.message_post(body="Bắt đầu phỏng vấn ứng viên.")
         return {'type': 'ir.actions.client', 'tag': 'reload'}
@@ -39,6 +48,8 @@ class Interview(models.Model):
         for rec in self:
             if not rec.can_pass_fail:
                 raise UserError(_("Ứng viên đã có kết quả hoặc chưa đủ điều kiện để thay đổi."))
+            self._check_interviewer_permission(rec)
+
             rec.result = 'pass'
             rec.applicant_id.state = 'interview_passed'
             rec.applicant_id.message_post(body="Ứng viên phỏng vấn đạt. Có thể gửi Offer.")
@@ -48,6 +59,8 @@ class Interview(models.Model):
         for rec in self:
             if not rec.can_pass_fail:
                 raise UserError(_("Ứng viên đã có kết quả hoặc chưa đủ điều kiện để thay đổi."))
+            self._check_interviewer_permission(rec)
+
             rec.result = 'fail'
             rec.applicant_id.state = 'rejected'
             rec.applicant_id.message_post(body="Ứng viên phỏng vấn không đạt.")

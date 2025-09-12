@@ -4,7 +4,9 @@
         <!-- Main Menu -->
         <menuitem id="forher_contract_main_menu"
                   name="ForHer Contract"
-                  sequence="10"/>
+                  sequence="10"
+                  groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board,base.group_system"/>
+
 
         <!-- Employee Submenu -->
         <menuitem id="forher_hr_employee_menu"
@@ -14,16 +16,16 @@
 
         <!-- Contract Submenu -->
         <menuitem id="forher_hr_contract_menu"
-                  name="Contracts"
+                  name="Hợp đồng"
                   parent="forher_contract_main_menu"
                   action="forher_hr_contract_action"
                   sequence="20"/>
 
         <!-- Reports Submenu -->
         <menuitem id="forher_contract_reports_menu"
-                  name="Reports"
+                  name="Báo cáo"
                   parent="forher_contract_main_menu"
-                  groups="forher_company_overview.forher_group_board"
+                  groups="forher_company_overview.forher_group_board,base.group_system"
                   sequence="30"/>
 
         <!-- Contract Statistics Report -->
@@ -46,5 +48,120 @@
                   parent="forher_contract_reports_menu"
                   action="forher_hr_contract_salary_analysis_action"
                   sequence="30"/>
+        
+        <!-- List view for Allowances -->
+        <record id="forher_hr_allowance_list_view" model="ir.ui.view">
+            <field name="name">forher.hr.contract.allowance.list</field>
+            <field name="model">forher.hr.contract.allowance</field>
+            <field name="arch" type="xml">
+                <list string="Allowances">
+                    <field name="name"/>
+                    <field name="amount"/>
+                    <field name="contract_id"/>
+                </list>
+            </field>
+        </record>
+
+        <!-- Form view for Allowances -->
+        <record id="forher_hr_allowance_form_view" model="ir.ui.view">
+            <field name="name">forher.hr.contract.allowance.form</field>
+            <field name="model">forher.hr.contract.allowance</field>
+            <field name="arch" type="xml">
+                <form string="Allowance">
+                    <group>
+                        <field name="name"/>
+                        <field name="amount"/>
+                        <field name="contract_id"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- Action for Allowances -->
+        <record id="forher_hr_allowance_action" model="ir.actions.act_window">
+            <field name="name">Allowances</field>
+            <field name="res_model">forher.hr.contract.allowance</field>
+            <field name="view_mode">list,form</field>
+            <field name="view_id" ref="forher_hr_allowance_list_view"/>
+        </record>
+
+         <!-- Allowances Submenu -->
+        <menuitem id="forher_hr_allowance_menu"
+                  name="Phụ cấp"
+                  parent="forher_contract_main_menu"
+                  action="forher_hr_allowance_action"
+                  sequence="25"
+                  groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board,base.group_system"/>
+
+        <!-- Action lấy từ model resource.calendar -->
+            <record id="forher_hr_schedule_action" model="ir.actions.act_window">
+                <field name="name">Work Schedules</field>
+                <field name="res_model">resource.calendar</field>
+                <field name="view_mode">list,form</field>
+                <field name="help" type="html">
+                    <p class="oe_view_nocontent_create">
+                        Nhấn vào đây để tạo hoặc chỉnh sửa lịch làm việc.
+                    </p>
+                </field>
+            </record>
+
+            <!-- Menu trỏ tới action resource.calendar -->
+            <menuitem id="forher_hr_schedule_menu"
+                    name="Lịch làm việc"
+                    parent="forher_contract_main_menu"
+                    action="forher_hr_schedule_action"
+                    sequence="26"
+                    groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board,base.group_system"/>
+            
+            <!-- Contract Type List View -->
+            <record id="view_hr_contract_type_list" model="ir.ui.view">
+                <field name="name">hr.contract.type.list</field>
+                <field name="model">hr.contract.type</field>
+                <field name="arch" type="xml">
+                    <list>
+                        <field name="name"/>
+                        <field name="code"/>
+                    </list>
+                </field>
+            </record>
+
+
+        <!-- Contract Type Kanban View -->
+        <record id="view_hr_contract_type_kanban" model="ir.ui.view">
+            <field name="name">hr.contract.type.kanban</field>
+            <field name="model">hr.contract.type</field>
+            <field name="arch" type="xml">
+                <kanban class="o_kanban_small_column">
+                    <templates>
+                        <t t-name="kanban-box">
+                            <div class="oe_kanban_global_click">
+                                <field name="name"/>
+                            </div>
+                        </t>
+                    </templates>
+                </kanban>
+            </field>
+        </record>
+
+        <!-- Action for Contract Types -->
+        <record id="action_hr_contract_type" model="ir.actions.act_window">
+            <field name="name">Loại hợp đồng</field>
+            <field name="res_model">hr.contract.type</field>
+            <field name="view_mode">kanban,list,form</field>
+            <field name="view_id" ref="view_hr_contract_type_list"/>
+            <field name="help" type="html">
+                <p class="oe_view_nocontent_create">
+                    Nhấn vào đây để tạo loại hợp đồng mới.
+                </p>
+            </field>
+        </record>
+
+        <!-- Menu item under ForHer Contract -->
+        <menuitem id="forher_hr_contract_type_menu"
+                  name="Loại hợp đồng"
+                  parent="forher_contract_main_menu"
+                  action="action_hr_contract_type"
+                  sequence="22"
+                  groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board,base.group_system"/>
     </data>
 </odoo>

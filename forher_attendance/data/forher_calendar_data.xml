@@ -1,0 +1,109 @@
+<odoo>
+    <!-- Lịch làm việc 2 ca -->
+    <record id="resource_calendar_two_shifts" model="resource.calendar">
+        <field name="name">Lịch làm việc 2 ca (Sáng &amp; Tối)</field>
+        <field name="company_id" eval="1"/>
+    </record>
+
+    <!-- =================== Ca Sáng: 08:30 - 16:00 =================== -->
+    <record id="attendance_shift_morning_mon" model="resource.calendar.attendance">
+        <field name="name">Ca sáng</field>
+        <field name="dayofweek">0</field> <!-- Thứ 2 -->
+        <field name="hour_from">8.5</field>
+        <field name="hour_to">16.0</field>
+        <field name="calendar_id" ref="resource_calendar_two_shifts"/>
+    </record>
+    <record id="attendance_shift_morning_tue" model="resource.calendar.attendance">
+        <field name="name">Ca sáng</field>
+        <field name="dayofweek">1</field> <!-- Thứ 3 -->
+        <field name="hour_from">8.5</field>
+        <field name="hour_to">16.0</field>
+        <field name="calendar_id" ref="resource_calendar_two_shifts"/>
+    </record>
+    <record id="attendance_shift_morning_wed" model="resource.calendar.attendance">
+        <field name="name">Ca sáng</field>
+        <field name="dayofweek">2</field> <!-- Thứ 4 -->
+        <field name="hour_from">8.5</field>
+        <field name="hour_to">16.0</field>
+        <field name="calendar_id" ref="resource_calendar_two_shifts"/>
+    </record>
+    <record id="attendance_shift_morning_thu" model="resource.calendar.attendance">
+        <field name="name">Ca sáng</field>
+        <field name="dayofweek">3</field> <!-- Thứ 5 -->
+        <field name="hour_from">8.5</field>
+        <field name="hour_to">16.0</field>
+        <field name="calendar_id" ref="resource_calendar_two_shifts"/>
+    </record>
+    <record id="attendance_shift_morning_fri" model="resource.calendar.attendance">
+        <field name="name">Ca sáng</field>
+        <field name="dayofweek">4</field> <!-- Thứ 6 -->
+        <field name="hour_from">8.5</field>
+        <field name="hour_to">16.0</field>
+        <field name="calendar_id" ref="resource_calendar_two_shifts"/>
+    </record>
+    <record id="attendance_shift_morning_sat" model="resource.calendar.attendance">
+        <field name="name">Ca sáng</field>
+        <field name="dayofweek">5</field> <!-- Thứ 7 -->
+        <field name="hour_from">8.5</field>
+        <field name="hour_to">16.0</field>
+        <field name="calendar_id" ref="resource_calendar_two_shifts"/>
+    </record>
+    <record id="attendance_shift_morning_sun" model="resource.calendar.attendance">
+        <field name="name">Ca sáng</field>
+        <field name="dayofweek">6</field> <!-- Chủ nhật -->
+        <field name="hour_from">8.5</field>
+        <field name="hour_to">16.0</field>
+        <field name="calendar_id" ref="resource_calendar_two_shifts"/>
+    </record>
+
+    <!-- =================== Ca Tối: 15:30 - 22:00 =================== -->
+    <record id="attendance_shift_evening_mon" model="resource.calendar.attendance">
+        <field name="name">Ca tối</field>
+        <field name="dayofweek">0</field> <!-- Thứ 2 -->
+        <field name="hour_from">16.0</field>
+        <field name="hour_to">22.0</field>
+        <field name="calendar_id" ref="resource_calendar_two_shifts"/>
+    </record>
+    <record id="attendance_shift_evening_tue" model="resource.calendar.attendance">
+        <field name="name">Ca tối</field>
+        <field name="dayofweek">1</field> <!-- Thứ 3 -->
+        <field name="hour_from">16.0</field>
+        <field name="hour_to">22.0</field>
+        <field name="calendar_id" ref="resource_calendar_two_shifts"/>
+    </record>
+    <record id="attendance_shift_evening_wed" model="resource.calendar.attendance">
+        <field name="name">Ca tối</field>
+        <field name="dayofweek">2</field> <!-- Thứ 4 -->
+        <field name="hour_from">16.0</field>
+        <field name="hour_to">22.0</field>
+        <field name="calendar_id" ref="resource_calendar_two_shifts"/>
+    </record>
+    <record id="attendance_shift_evening_thu" model="resource.calendar.attendance">
+        <field name="name">Ca tối</field>
+        <field name="dayofweek">3</field> <!-- Thứ 5 -->
+        <field name="hour_from">16.0</field>
+        <field name="hour_to">22.0</field>
+        <field name="calendar_id" ref="resource_calendar_two_shifts"/>
+    </record>
+    <record id="attendance_shift_evening_fri" model="resource.calendar.attendance">
+        <field name="name">Ca tối</field>
+        <field name="dayofweek">4</field> <!-- Thứ 6 -->
+        <field name="hour_from">16.0</field>
+        <field name="hour_to">22.0</field>
+        <field name="calendar_id" ref="resource_calendar_two_shifts"/>
+    </record>
+    <record id="attendance_shift_evening_sat" model="resource.calendar.attendance">
+        <field name="name">Ca tối</field>
+        <field name="dayofweek">5</field> <!-- Thứ 7 -->
+        <field name="hour_from">16.0</field>
+        <field name="hour_to">22.0</field>
+        <field name="calendar_id" ref="resource_calendar_two_shifts"/>
+    </record>
+    <record id="attendance_shift_evening_sun" model="resource.calendar.attendance">
+        <field name="name">Ca tối</field>
+        <field name="dayofweek">6</field> <!-- Chủ nhật -->
+        <field name="hour_from">16.0</field>
+        <field name="hour_to">22.0</field>
+        <field name="calendar_id" ref="resource_calendar_two_shifts"/>
+    </record>
+</odoo>

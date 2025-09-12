@@ -15,7 +15,11 @@ class CompanyOverview(models.Model):
     subcompany_ids = fields.One2many(related='company_id.child_ids', string='Chi nhánh', readonly=True)
 
     # Cấp phân quyền
-    permission_level_ids = fields.One2many('forher.permission.level', 'company_overview_id', string='Cấp phân quyền')
+    permission_level_ids = fields.One2many(
+        'forher.permission.level',
+        'company_overview_id',
+        string='Cấp phân quyền'
+    )
 
 
 class PermissionLevel(models.Model):
@@ -27,8 +31,12 @@ class PermissionLevel(models.Model):
     code = fields.Selection([
         ('board', 'Ban Giám Đốc'),
         ('branch_manager', 'Quản lý Chi nhánh'),
+        ('accountant', 'Kế toán'),
         ('employee', 'Nhân viên'),
     ], string='Mã cấp', required=True)
     description = fields.Text('Mô tả')
 
-    company_overview_id = fields.Many2one('forher.company.overview', string='Công ty mẹ')
+    company_overview_id = fields.Many2one(
+        'forher.company.overview',
+        string='Công ty mẹ'
+    )

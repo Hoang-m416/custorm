@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- ================= LIST VIEW ================= -->
+    <record id="view_attendance_list_inherit" model="ir.ui.view">
+        <field name="name">hr.attendance.list.forher</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.view_attendance_tree"/>
+        <field name="arch" type="xml">
+            <field name="employee_id" position="after">
+                <field name="branch_id"/>
+                <field name="parent_company_id"/>
+                <field name="contract_type_id"/>
+            </field>
+            <field name="worked_hours" position="after">
+                <field name="attendance_type_id"/>
+                <field name="quantity"/>
+                <field name="total_amount"/>
+                <field name="recorded_by"/>
+                <field name="is_public"/>
+                <field name="is_late"/>
+                <field name="is_early"/>
+                <field name="state" widget="badge"
+                       decoration-success="state == 'validated'"
+                       decoration-warning="state == 'confirmed'"
+                       decoration-danger="state == 'rejected'"
+                       decoration-muted="state == 'draft'"/>
+            </field>
+        </field>
+    </record>
+
+        <!-- ================= FORM VIEW — LOCK ALL & MANAGER ENABLE ================= -->
+    <record id="view_attendance_form_lock_and_manager" model="ir.ui.view">
+        <field name="name">hr.attendance.form.forher.lock.manager</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.hr_attendance_view_form"/>
+        <field name="arch" type="xml">
+
+           <xpath expr="//field[@name='state']" position="replace">
+    <!-- Readonly cho tất cả -->
+    <field name="state" widget="statusbar"
+           statusbar_visible="draft,confirmed,validated,rejected"
+           readonly="1"
+           groups="base.group_user"/>
+
+    <!-- Editable cho Manager + Board -->
+    <field name="state" widget="statusbar"
+           statusbar_visible="draft,confirmed,validated,rejected"
+           readonly="0"
+           groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board"/>
+</xpath>
+
+
+            <!-- Thêm nút hành động cho Manager + Board -->
+            <xpath expr="//header" position="inside">
+                <button name="action_confirm" string="Xác nhận" type="object" class="oe_highlight"
+                        groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board"
+                        invisible="state != 'draft'"/>
+                <button name="action_validate" string="Duyệt" type="object" class="oe_highlight"
+                        groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board"
+                        invisible="state != 'confirmed'"/>
+                <button name="action_reject" string="Từ chối" type="object" class="btn-secondary"
+                        groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board"
+                        invisible="state in ['draft', 'rejected']"/>
+            </xpath>
+
+        </field>
+    </record>
+
+
+    <!-- ================= SEARCH VIEW ================= -->
+    <record id="view_attendance_search_forher" model="ir.ui.view">
+        <field name="name">hr.attendance.search.forher</field>
+        <field name="model">hr.attendance</field>
+        <field name="arch" type="xml">
+            <search string="Tìm kiếm Chấm công">
+                <field name="employee_id"/>
+                <field name="branch_id"/>
+                <field name="parent_company_id"/>
+                <field name="attendance_type_id"/>
+                <field name="date"/>
+                <filter name="pending_validation" string="Chờ duyệt" domain="[('state', '=', 'confirmed')]"/>
+                <filter name="validated" string="Đã duyệt" domain="[('state', '=', 'validated')]"/>
+                <filter name="draft" string="Nháp" domain="[('state', '=', 'draft')]"/>
+                <filter name="rejected" string="Từ chối" domain="[('state', '=', 'rejected')]"/>
+                <group expand="1" string="Nhóm theo">
+                    <filter name="groupby_employee" string="Nhân viên" context="{'group_by': 'employee_id'}"/>
+                    <filter name="groupby_state" string="Trạng thái" context="{'group_by': 'state'}"/>
+                    <filter name="groupby_branch" string="Chi nhánh" context="{'group_by': 'branch_id'}"/>
+                    <filter name="groupby_attendance_type" string="Loại công" context="{'group_by': 'attendance_type_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ================= ACTION ================= -->
+    <record id="hr_attendance_action" model="ir.actions.act_window">
+        <field name="name">Chấm công</field>
+        <field name="res_model">hr.attendance</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_attendance_search_forher"/>
+    </record>
+
+</odoo>

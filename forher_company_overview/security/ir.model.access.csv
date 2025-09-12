@@ -1,10 +1,13 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_forher_company_overview_board,forher.company.overview (Board),model_forher_company_overview,forher_group_board,1,1,1,1
 access_forher_company_overview_manager,forher.company.overview (Manager),model_forher_company_overview,forher_group_branch_manager,1,1,0,0
+access_forher_company_overview_accountant,forher.company.overview (Accountant),model_forher_company_overview,forher_group_accountant,1,1,0,0
 access_forher_company_overview_employee,forher.company.overview (Employee),model_forher_company_overview,forher_group_employee,1,0,0,0
 access_forher_company_overview_admin,forher.company.overview (Admin),model_forher_company_overview,base.group_system,1,1,1,1
 
 access_forher_permission_level_board,forher.permission.level (Board),model_forher_permission_level,forher_group_board,1,1,1,1
 access_forher_permission_level_manager,forher.permission.level (Manager),model_forher_permission_level,forher_group_branch_manager,1,1,0,0
+access_forher_permission_level_accountant,forher.permission.level (Accountant),model_forher_permission_level,forher_group_accountant,1,1,0,0
 access_forher_permission_level_employee,forher.permission.level (Employee),model_forher_permission_level,forher_group_employee,1,0,0,0
 access_forher_permission_level_admin,forher.permission.level (Admin),model_forher_permission_level,base.group_system,1,1,1,1
+
