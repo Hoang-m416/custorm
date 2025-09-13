@@ -1,0 +1,26 @@
+<odoo>
+  <!-- Lịch làm việc PARTTIME 15:30–22:00 (T2–cn), chia 2 ca -->
+  <record id="resource_calendar_parttime_1530_2200" model="resource.calendar">
+    <field name="name">Parttime 15:30–22:00 (T2–cn)</field>
+    <field name="company_id" ref="base.main_company"/>
+    
+    <field name="attendance_ids" eval="[
+      (5, 0, 0),
+
+      (0, 0, {'name': 'Ca part', 'dayofweek': '0', 'hour_from': 15.5, 'hour_to': 22.0}),
+
+      (0, 0, {'name': 'Ca part', 'dayofweek': '1', 'hour_from': 15.5, 'hour_to': 22.0}),
+
+      (0, 0, {'name': 'Ca part', 'dayofweek': '2', 'hour_from': 15.5, 'hour_to': 22.0}),
+
+      (0, 0, {'name': 'Ca part', 'dayofweek': '3', 'hour_from': 15.5, 'hour_to': 22.0}),
+
+      (0, 0, {'name': 'Ca part', 'dayofweek': '4', 'hour_from': 15.5, 'hour_to': 22.0}),
+
+        (0, 0, {'name': 'Ca part', 'dayofweek': '5', 'hour_from': 15.5, 'hour_to': 22.0}),
+
+        (0, 0, {'name': 'Ca part', 'dayofweek': '6', 'hour_from': 15.5, 'hour_to': 22.0}),
+
+    ]"/>
+  </record>
+</odoo>

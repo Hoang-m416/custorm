@@ -84,11 +84,6 @@
                                     </t>
 
                                     <t t-if="record.state.raw_value=='interview_passed'">
-                                        <button type="object" name="action_send_offer"
-                                                class="btn btn-warning btn-sm"
-                                                groups="forher_company_overview.forher_group_branch_manager,base.group_system">
-                                            Gửi Offer
-                                        </button>
                                         <button type="object" name="action_confirm_hire"
                                                 class="btn btn-success btn-sm"
                                                 groups="forher_company_overview.forher_group_branch_manager,base.group_system">
@@ -156,10 +151,6 @@
                         <!-- Chỉ hiện khi trạng thái là 'screened' -->
                         <button name="action_schedule_interview_wizard" string="Lên lịch PV" type="object" class="btn-secondary btn-dynamic"
                                 invisible="state != 'screened'"/>
-                        
-                        <!-- Chỉ hiện khi trạng thái là 'interview_passed' -->
-                        <button name="action_send_offer" string="Gửi Offer" type="object" class="btn-warning btn-dynamic"
-                                invisible="state != 'interview_passed'"/>
                         
                         <!-- Chỉ hiện khi trạng thái là 'pending_confirmation' -->
                         <button name="action_confirm_hire" string="Xác nhận Tuyển" type="object" class="btn-success btn-dynamic"

@@ -197,8 +197,10 @@ class ForHerHrContract(models.Model):
         for record in self:
             if record.state != 'waiting_approval':
                 continue
-            record.state = 'open'
+            # Bypass tất cả override write
+            super(models.Model, record).write({'state': 'open'})
             record.message_post(body="Contract approved and set to running.")
+
 
     def action_reject_contract(self):
         for record in self:

@@ -9,7 +9,7 @@ class EmployeeType(models.Model):
 
     # Quan hệ với nhân viên
     employee_ids = fields.One2many('hr.employee', 'employee_type_id', string='Nhân viên')
-    employee_count = fields.Integer(string='Số lượng nhân viên', compute='_compute_employee_count')
+    employee_count = fields.Integer(string=' nhân viên', compute='_compute_employee_count')
 
     @api.depends('employee_ids')
     def _compute_employee_count(self):

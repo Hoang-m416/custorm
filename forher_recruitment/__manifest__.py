@@ -16,7 +16,6 @@
 
     'views/menu_actions.xml', 
     'views/interview_views.xml',
-    'views/offer_letter_views.xml',
    
     'views/website_menus.xml',
     # Email templates

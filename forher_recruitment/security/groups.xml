@@ -16,6 +16,13 @@
             <field name="domain_force">[('company_id', 'in', user.company_ids.ids)]</field>
         </record>
 
+        <record id="rule_interview_branch_manager_company" model="ir.rule">
+            <field name="name">Quản lý Chi nhánh - Xem phỏng vấn trong công ty</field>
+            <field name="model_id" ref="model_forher_interview"/>
+            <field name="groups" eval="[(4, ref('forher_company_overview.forher_group_branch_manager'))]"/>
+            <field name="domain_force">[('applicant_id.company_id','in',user.company_ids.ids)]</field>
+        </record>
+
 
         <!-- Rule cho Ban Giám Đốc: được xem tất cả dữ liệu -->
         <record id="rule_request_board_all" model="ir.rule">
@@ -32,5 +39,6 @@
             <field name="domain_force">[(1,'=',1)]</field>
         </record>
 
+        
     </data>
 </odoo>

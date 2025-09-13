@@ -166,7 +166,18 @@ class Applicant(models.Model):
         for rec in self:
             if rec.state != 'waiting':
                 raise UserError(_("Chỉ có thể xóa ứng viên ở trạng thái Dự bị."))
+
+            # Xóa tất cả lịch phỏng vấn liên quan
+            rec_interviews = self.env['forher.interview'].search([('applicant_id', '=', rec.id)])
+            rec_interviews.unlink()
+
+            # Nếu có các liên kết khác (Offer, Schedule) cũng xóa tương tự
+            rec_offers = self.env['forher.offer.letter'].search([('applicant_id', '=', rec.id)])
+            rec_offers.unlink()
+
+            # Cuối cùng xóa ứng viên
             rec.unlink()
+
 
     # --- Computed Fields ---
     @api.depends('state')

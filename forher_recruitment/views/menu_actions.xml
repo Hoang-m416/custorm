@@ -80,18 +80,4 @@
               action="action_interviews" sequence="30"
               groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board,base.group_system"/>
 
-    <!-- Offer Letter -->
-    <record id="action_offer_letters" model="ir.actions.act_window">
-        <field name="name">Offer Letter</field>
-        <field name="res_model">forher.offer.letter</field>
-        <field name="view_mode">kanban,form</field>
-        <field name="groups_id" eval="[(6, 0, [
-            ref('forher_company_overview.forher_group_branch_manager'),
-            ref('forher_company_overview.forher_group_board'),
-            ref('base.group_system')
-        ])]"/>
-    </record>
-    <menuitem id="menu_offer_letters" name="Offer Letter" parent="menu_forher_root"
-              action="action_offer_letters" sequence="40"
-              groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board,base.group_system"/>
 </odoo>

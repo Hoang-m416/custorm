@@ -30,42 +30,44 @@
     </record>
 
         <!-- ================= FORM VIEW — LOCK ALL & MANAGER ENABLE ================= -->
-    <record id="view_attendance_form_lock_and_manager" model="ir.ui.view">
-        <field name="name">hr.attendance.form.forher.lock.manager</field>
-        <field name="model">hr.attendance</field>
-        <field name="inherit_id" ref="hr_attendance.hr_attendance_view_form"/>
-        <field name="arch" type="xml">
+    <record id="view_attendance_form_inherit" model="ir.ui.view">
+    <field name="name">hr.attendance.form.forher.notebook</field>
+    <field name="model">hr.attendance</field>
+    <field name="inherit_id" ref="hr_attendance.hr_attendance_view_form"/>
+    <field name="arch" type="xml">
+        <!-- Wrap existing sheet vào notebook -->
+        <xpath expr="//sheet" position="inside">
+            <notebook>
+                <page string="Thông tin cơ bản">
+                    <group>
+                        <field name="employee_id"/>
+                        <field name="branch_id" readonly="1"/>
+                        <field name="parent_company_id" readonly="1"/>
+                        <field name="contract_type_id" readonly="1"/>
+                        <field name="date" readonly="1"/>
+                    </group>
+                </page>
+                <!-- Thêm page mới -->
+                <page string="Thông tin mở rộng">
+                    <group string="Công &amp; Loại công">
+                        <field name="attendance_type_id"/>
+                        <field name="quantity"/>
+                        <field name="total_amount"/>
+                        <field name="is_late"/>
+                        <field name="is_early"/>
+                    </group>
+                    <group string="Người ghi nhận &amp; Quyền đối soát">
+                        <field name="recorded_by"/>
+                        <field name="is_public"/>
+                    </group>
+                    
+                </page>
+            </notebook>
+        </xpath>
+    </field>
+</record>
 
-           <xpath expr="//field[@name='state']" position="replace">
-    <!-- Readonly cho tất cả -->
-    <field name="state" widget="statusbar"
-           statusbar_visible="draft,confirmed,validated,rejected"
-           readonly="1"
-           groups="base.group_user"/>
 
-    <!-- Editable cho Manager + Board -->
-    <field name="state" widget="statusbar"
-           statusbar_visible="draft,confirmed,validated,rejected"
-           readonly="0"
-           groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board"/>
-</xpath>
-
-
-            <!-- Thêm nút hành động cho Manager + Board -->
-            <xpath expr="//header" position="inside">
-                <button name="action_confirm" string="Xác nhận" type="object" class="oe_highlight"
-                        groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board"
-                        invisible="state != 'draft'"/>
-                <button name="action_validate" string="Duyệt" type="object" class="oe_highlight"
-                        groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board"
-                        invisible="state != 'confirmed'"/>
-                <button name="action_reject" string="Từ chối" type="object" class="btn-secondary"
-                        groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board"
-                        invisible="state in ['draft', 'rejected']"/>
-            </xpath>
-
-        </field>
-    </record>
 
 
     <!-- ================= SEARCH VIEW ================= -->
