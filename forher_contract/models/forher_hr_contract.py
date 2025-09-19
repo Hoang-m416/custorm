@@ -11,6 +11,18 @@ class ForHerHrContract(models.Model):
     _description = 'ForHer HR Contract'
     _inherit = ['hr.contract']
 
+    calendar_id = fields.Many2one(
+    'resource.calendar',
+    string='Lịch làm việc'
+)
+
+    attendance_ids = fields.One2many(
+        'resource.calendar.attendance',
+        'calendar_id',
+        string='Working Hours',
+        related='calendar_id.attendance_ids',
+        readonly=True
+    )
     name = fields.Char(string='Contract Reference', required=False, copy=False, readonly=True)
     state = fields.Selection([
         ('draft', 'New'),
@@ -218,7 +230,7 @@ class ForHerHrContract(models.Model):
     last_renewal_date = fields.Date(string="Last Renewal Date", readonly=True)
 
     def action_renew_contract(self, months=12):
-        """Gia hạn hợp đồng nếu trạng thái là hết hạn hoặc hủy"""
+        from dateutil.relativedelta import relativedelta
         for contract in self:
             if contract.state not in ['close', 'cancel']:
                 raise ValueError(_("Chỉ có thể gia hạn khi hợp đồng đã hết hạn hoặc bị hủy."))
@@ -226,18 +238,23 @@ class ForHerHrContract(models.Model):
             if not contract.date_end:
                 raise ValueError(_("Hợp đồng %s không có ngày kết thúc để gia hạn.") % contract.name)
 
-            # Tính ngày kết thúc mới
-            new_end_date = contract.date_end + timedelta(days=months * 30)
-            contract.write({
-                'date_end': new_end_date,
+            new_start = contract.date_end + timedelta(days=1)
+            new_end = new_start + relativedelta(months=months)
+
+            # Ghi trực tiếp mà bỏ qua override write của hr.contract
+            super(models.Model, contract).write({
+                'date_start': new_start,
+                'date_end': new_end,
                 'state': 'open',
                 'renewal_count': contract.renewal_count + 1,
                 'last_renewal_date': fields.Date.today(),
             })
+
             contract.message_post(
-                body=_("Hợp đồng đã được gia hạn đến %s (Lần gia hạn #%s).") %
-                     (new_end_date.strftime("%d/%m/%Y"), contract.renewal_count)
+                body=_("Hợp đồng đã được gia hạn trực tiếp từ %s đến %s (Lần gia hạn #%s).") %
+                    (new_start.strftime("%d/%m/%Y"), new_end.strftime("%d/%m/%Y"), contract.renewal_count)
             )
+
 
     def action_cancel_contract(self):
         """Hủy hợp đồng thủ công"""

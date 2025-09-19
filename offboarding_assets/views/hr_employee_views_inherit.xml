@@ -1,0 +1,19 @@
+<odoo>
+  <record id="view_hr_employee_form_inherit_offb" model="ir.ui.view">
+    <field name="name">hr.employee.form.offboarding.inherit</field>
+    <field name="model">hr.employee</field>
+    <field name="inherit_id" ref="hr.view_employee_form"/>
+    <field name="arch" type="xml">
+      <xpath expr="//sheet/notebook" position="inside">
+        <page string="Offboarding">
+          <group>
+            <button name="%(offboarding_assets.action_offb_assets)d"
+                    type="action" string="Mở danh sách thu hồi" class="btn-secondary"/>
+            <button name="action_create_offboarding_from_employee"
+                    string="Tạo phiếu thu hồi" type="object" class="btn-primary"/>
+          </group>
+        </page>
+      </xpath>
+    </field>
+  </record>
+</odoo>

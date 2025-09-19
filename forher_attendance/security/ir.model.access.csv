@@ -1,18 +1,10 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_forher_attendance_type_board,forher.attendance.type (Board),model_forher_attendance_type,forher_company_overview.forher_group_board,1,1,1,1
-access_forher_attendance_type_manager,forher.attendance.type (Manager),model_forher_attendance_type,forher_company_overview.forher_group_branch_manager,1,1,1,0
-access_forher_attendance_type_accountant,forher.attendance.type (Accountant),model_forher_attendance_type,forher_company_overview.forher_group_accountant,1,1,0,0
-access_forher_attendance_type_employee,forher.attendance.type (Employee),model_forher_attendance_type,forher_company_overview.forher_group_employee,1,0,0,0
-access_forher_attendance_type_admin,forher.attendance.type (Admin),model_forher_attendance_type,base.group_system,1,1,1,1
-
-access_hr_attendance_board,hr.attendance (Board),model_hr_attendance,forher_company_overview.forher_group_board,1,1,1,1
-access_hr_attendance_manager,hr.attendance (Manager),model_hr_attendance,forher_company_overview.forher_group_branch_manager,1,1,1,0
-access_hr_attendance_accountant,hr.attendance (Accountant),model_hr_attendance,forher_company_overview.forher_group_accountant,1,1,1,0
-access_hr_attendance_employee,hr.attendance (Employee),model_hr_attendance,forher_company_overview.forher_group_employee,1,0,1,0
-access_hr_attendance_admin,hr.attendance (Admin),model_hr_attendance,base.group_system,1,1,1,1
-
-access_hr_employee_board,hr.employee (Board),model_hr_employee,forher_company_overview.forher_group_board,1,1,1,1
-access_hr_employee_manager,hr.employee (Manager),model_hr_employee,forher_company_overview.forher_group_branch_manager,1,1,1,0
-access_hr_employee_accountant,hr.employee (Accountant),model_hr_employee,forher_company_overview.forher_group_accountant,1,1,0,0
-access_hr_employee_employee,hr.employee (Employee),model_hr_employee,forher_company_overview.forher_group_employee,1,0,0,0
-access_hr_employee_admin,hr.employee (Admin),model_hr_employee,base.group_system,1,1,1,1
+access_employee_board,access_employee_board,hr.model_hr_employee,forher_company_overview.forher_group_board,1,0,0,0
+access_employee_branch_manager,access_employee_branch_manager,hr.model_hr_employee,forher_company_overview.forher_group_branch_manager,1,0,0,0
+access_employee_self,access_employee_self,hr.model_hr_employee,forher_company_overview.forher_group_employee,1,0,0,0
+access_attendance_board,access_attendance_board,hr_attendance.model_hr_attendance,forher_company_overview.forher_group_board,1,1,1,0
+access_attendance_branch_manager,access_attendance_branch_manager,hr_attendance.model_hr_attendance,forher_company_overview.forher_group_branch_manager,1,1,1,0
+access_attendance_self,access_attendance_self,hr_attendance.model_hr_attendance,forher_company_overview.forher_group_employee,1,0,0,0
+access_att_type_board,access_att_type_board,model_forher_attendance_type,forher_company_overview.forher_group_board,1,1,1,0
+access_att_type_branch_manager,access_att_type_branch_manager,model_forher_attendance_type,forher_company_overview.forher_group_branch_manager,1,1,1,0
+access_att_type_employee,access_att_type_employee,model_forher_attendance_type,forher_company_overview.forher_group_employee,1,0,0,0

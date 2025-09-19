@@ -41,36 +41,64 @@ class HrAttendance(models.Model):
     is_early = fields.Boolean(string="Về sớm", compute="_compute_late_early", store=True)
 
     from datetime import datetime, time
+    worked_hours_float = fields.Float(
+        string="Worked Hours (Float)",
+        compute="_compute_worked_hours_float",
+        store=True
+    )
+
+    ot_done = fields.Float(
+        string="OT Done",
+        help="Số giờ OT thực tế",
+        default=0.0
+    )
+
+    ot_balance = fields.Float(
+        string="OT Balance",
+        help="Số giờ OT còn lại hoặc bù trừ",
+        default=0.0
+    )
+    
+    def _compute_worked_hours_float(self):
+        for rec in self:
+            rec.worked_hours_float = rec.worked_hours
 
     @api.constrains('check_in', 'employee_id')
     def _check_one_attendance_per_day_and_contract(self):
-        """Ngăn chặn chấm công nhiều lần trong ngày và hợp đồng không Running"""
+        """Ngăn chặn chấm công nhiều lần trong ngày (theo TZ user) + hợp đồng phải đang 'open'."""
         for rec in self:
             if not rec.check_in or not rec.employee_id:
                 continue
 
-            # Kiểm tra hợp đồng đang chạy
+            # Hợp đồng phải 'open'
             contract = rec.contract_id or rec.employee_id.current_forher_contract_id
             if not contract or contract.state != 'open':
                 raise ValidationError(
                     _('Nhân viên %s không có hợp đồng đang chạy. Không thể chấm công.') % rec.employee_id.name
                 )
 
-            # Lấy ngày theo timezone user
+            # Mốc ngày theo TZ user -> đổi về UTC để đưa vào domain
             user_tz = pytz.timezone(self.env.user.tz or 'UTC')
-            check_date = rec.check_in.astimezone(user_tz).date() if rec.check_in.tzinfo else rec.check_in.replace(tzinfo=pytz.UTC).astimezone(user_tz).date()
+            dt = rec.check_in
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=pytz.UTC)
+            local_dt = dt.astimezone(user_tz)
+            d = local_dt.date()
+            local_start = datetime.combine(d, time.min).replace(tzinfo=user_tz)
+            local_end   = datetime.combine(d, time.max).replace(tzinfo=user_tz)
+            day_start_utc = local_start.astimezone(pytz.UTC)
+            day_end_utc   = local_end.astimezone(pytz.UTC)
 
-            # Tìm bản ghi cùng nhân viên cùng ngày
             existing = self.search([
                 ('employee_id', '=', rec.employee_id.id),
                 ('id', '!=', rec.id),
-                ('check_in', '>=', datetime.combine(check_date, time.min)),
-                ('check_in', '<=', datetime.combine(check_date, time.max)),
+                ('check_in', '>=', fields.Datetime.to_string(day_start_utc)),
+                ('check_in', '<=', fields.Datetime.to_string(day_end_utc)),
             ], limit=1)
             if existing:
                 raise ValidationError(
                     _('Nhân viên %s đã chấm công hôm %s. Chỉ được chấm 1 lần/ngày.') %
-                    (rec.employee_id.name, check_date)
+                    (rec.employee_id.name, d.strftime('%d/%m/%Y'))
                 )
 
     @api.depends("check_in", "check_out", "employee_id")
@@ -112,7 +140,7 @@ class HrAttendance(models.Model):
                 rec.attendance_type_id = self.env.ref("forher_attendance.type_ot")
 
 
-    # === ForHer integration fields ===
+    # === ForHer integration fields === tổng quan chấm công
     branch_id = fields.Many2one(
         'res.company',
         string='Chi nhánh',
@@ -146,6 +174,7 @@ class HrAttendance(models.Model):
         readonly=True
     )
 
+
     # Loại công (ForHer)
     attendance_type_id = fields.Many2one(
         'forher.attendance.type',
@@ -175,8 +204,8 @@ class HrAttendance(models.Model):
     check_in_location = fields.Char('Vị trí check-in')
     check_out_location = fields.Char('Vị trí check-out')
 
-    check_in_ip = fields.Char('IP check-in')
-    check_out_ip = fields.Char('IP check-out')
+    # check_in_ip = fields.Char('IP check-in')  # Đã bỏ không sử dụng
+    # check_out_ip = fields.Char('IP check-out')  # Đã bỏ không sử dụng
 
     # Số lượng theo unit: nếu unit = hour thì lưu giờ (float), nếu day thì số ngày (float), nếu task thì số công (float)
     quantity = fields.Float('Số lượng', default=1.0,
@@ -264,79 +293,157 @@ class HrAttendance(models.Model):
         return True
 
     @api.model
-    def create_attendance(self, employee_id, check_type='check_in', note=None, location=None, attendance_type_id=None, quantity=1.0):
+    def create_attendance(
+        self, employee_id, check_type="check_in", note=None, location=None,
+        attendance_type_id=None, quantity=1.0
+    ):
         """
         API để tạo bản ghi chấm công (dùng cho mobile/web)
-        - attendance_type_id: id của forher.attendance.type
-        - quantity: số lượng (ngày/giờ/công)
         - Chỉ cho phép 1 lần chấm công/ngày
         - Chỉ cho phép hợp đồng Running (state='open')
+        - Hỗ trợ phân biệt fulltime / parttime
         """
-        employee = self.env['hr.employee'].browse(employee_id)
+
+        # ================== 1. Lấy nhân viên ==================
+        employee = self.env["hr.employee"].browse(employee_id)
         if not employee.exists():
-            raise UserError(_('Nhân viên không tồn tại.'))
+            raise UserError(_("Nhân viên không tồn tại."))
 
         if not employee.company_id:
-            raise UserError(_('Nhân viên %s chưa được gán chi nhánh.') % employee.name)
+            raise UserError(_("Nhân viên %s chưa được gán chi nhánh.") % employee.name)
 
-        # Chỉ cho phép QL chi nhánh hoặc kế toán ghi nhận
+        # ================== 2. Phân quyền ==================
         user = self.env.user
-        if not (user.has_group('forher_company_overview.forher_group_branch_manager') or
-                user.has_group('forher_company_overview.forher_group_accountant')):
-            raise UserError(_('Bạn không có quyền ghi nhận chấm công.'))
+        if not (user.has_group("forher_company_overview.forher_group_branch_manager") or
+                user.has_group("forher_company_overview.forher_group_accountant")):
+            raise UserError(_("Bạn không có quyền ghi nhận chấm công."))
 
-        # Kiểm tra hợp đồng đang chạy
+        # ================== 3. Kiểm tra hợp đồng ==================
         contract = employee.current_forher_contract_id
-        if not contract or contract.state != 'open':
-            raise UserError(_('Nhân viên %s không có hợp đồng đang chạy, không thể chấm công.') % employee.name)
+        if not contract or contract.state != "open":
+            raise UserError(_("Nhân viên %s không có hợp đồng đang chạy.") % employee.name)
 
-        # Lấy ngày hiện tại theo timezone user
-        user_tz = pytz.timezone(user.tz or 'UTC')
-        today_local = datetime.now(pytz.UTC).astimezone(user_tz).date()
+        # ================== 4. Xác định ngày hiện tại ==================
+        user_tz = pytz.timezone(user.tz or "UTC")
+        now_utc = datetime.now(pytz.UTC)
+        today_local = now_utc.astimezone(user_tz).date()
 
-        # Kiểm tra đã chấm công hôm nay chưa
-        existing_today = self.search([
-            ('employee_id', '=', employee_id),
-            ('check_in', '>=', fields.Datetime.to_string(datetime.combine(today_local, time.min))),
-            ('check_in', '<=', fields.Datetime.to_string(datetime.combine(today_local, time.max))),
-        ], limit=1)
-        if existing_today:
-            raise UserError(_('Nhân viên %s đã chấm công hôm nay.') % employee.name)
+        local_start = datetime.combine(today_local, time.min).replace(tzinfo=user_tz)
+        local_end = datetime.combine(today_local, time.max).replace(tzinfo=user_tz)
+        day_start_utc = local_start.astimezone(pytz.UTC)
+        day_end_utc = local_end.astimezone(pytz.UTC)
 
+        # ================== 5. Chặn chấm công trùng trong ngày ==================
+        if check_type == "check_in":
+            existing_today = self.search([
+                ("employee_id", "=", employee_id),
+                ("check_in", ">=", fields.Datetime.to_string(day_start_utc)),
+                ("check_in", "<=", fields.Datetime.to_string(day_end_utc)),
+            ], limit=1)
+            if existing_today:
+                raise UserError(_("Nhân viên %s đã chấm công hôm nay.") % employee.name)
+
+        # ================== 6. Chuẩn bị dữ liệu ==================
         vals = {
-            'employee_id': employee_id,
-            'attendance_type_id': attendance_type_id,
-            'quantity': quantity,
-            'recorded_by': user.id,
-            'check_in_note': note,
-            'check_in_location': location,
-            'check_in_ip': self._get_client_ip(),
+            "employee_id": employee_id,
+            "attendance_type_id": attendance_type_id,
+            "recorded_by": user.id,
+            "check_in_note": note if check_type == "check_in" else None,
+            "check_out_note": note if check_type == "check_out" else None,
+            "check_in_location": location if check_type == "check_in" else None,
+            "check_out_location": location if check_type == "check_out" else None,
         }
 
-        if check_type == 'check_in':
-            vals['check_in'] = fields.Datetime.now()
-            return self.create(vals)
+        # ================== 7. Logic Fulltime ==================
+        if contract.contract_type_id and contract.contract_type_id.code == "fulltime":
+            calendar = contract.calendar_id
+            if not calendar:
+                raise UserError(_("Hợp đồng %s chưa được gán lịch làm việc.") % contract.name)
+
+            weekday = today_local.weekday()
+            attendances = calendar.attendance_ids.filtered(lambda a: int(a.dayofweek) == weekday)
+            if not attendances:
+                raise UserError(_("Không tìm thấy ca làm việc cho %s trong ngày %s") %
+                                (employee.name, today_local.strftime("%d/%m/%Y")))
+
+            att = attendances[0]  # TODO: mở rộng nhiều ca
+            start_hour = int(att.hour_from)
+            start_minute = int((att.hour_from - start_hour) * 60)
+            end_hour = int(att.hour_to)
+            end_minute = int((att.hour_to - end_hour) * 60)
+
+            planned_start = datetime.combine(today_local, time(start_hour, start_minute)).replace(tzinfo=user_tz).astimezone(pytz.UTC)
+            planned_end = datetime.combine(today_local, time(end_hour, end_minute)).replace(tzinfo=user_tz).astimezone(pytz.UTC)
+
+            if check_type == "check_in":
+                now = fields.Datetime.now()
+                vals["check_in"] = now
+                vals["quantity"] = 0.0
+                vals["is_late"] = now > planned_start
+                return self.create(vals)
+
+            else:  # check_out
+                attendance = self.search([
+                    ("employee_id", "=", employee_id),
+                    ("check_out", "=", False)
+                ], limit=1, order="check_in desc")
+
+                if not attendance:
+                    raise UserError(_("Không tìm thấy bản ghi check-in để kết thúc."))
+
+                now = fields.Datetime.now()
+                delta_hours = (now - attendance.check_in).total_seconds() / 3600.0
+
+                vals_update = {
+                    "check_out": now,
+                    "check_out_note": note,
+                    "check_out_location": location,
+                    "quantity": round(delta_hours, 2),
+                }
+
+                if now < planned_end:
+                    vals_update["is_early"] = True
+
+                attendance.write(vals_update)
+                attendance.invalidate_cache()
+                return attendance
+
+        # ================== 8. Logic Parttime ==================
+        elif contract.contract_type_id and contract.contract_type_id.code == "parttime":
+            if check_type == "check_in":
+                vals["check_in"] = fields.Datetime.now()
+                vals["quantity"] = 0.0
+                return self.create(vals)
+            else:
+                attendance = self.search([
+                    ("employee_id", "=", employee_id),
+                    ("check_out", "=", False)
+                ], limit=1, order="check_in desc")
+
+                if not attendance:
+                    raise UserError(_("Không tìm thấy bản ghi check-in để kết thúc."))
+
+                now = fields.Datetime.now()
+                vals_update = {
+                    "check_out": now,
+                    "check_out_note": note,
+                    "check_out_location": location,
+                    # parttime: tính công cố định (vd: quantity từ tham số)
+                    "quantity": quantity or attendance.quantity,
+                }
+                attendance.write(vals_update)
+                attendance.invalidate_cache()
+                return attendance
+
+        # ================== 9. Loại hợp đồng khác ==================
         else:
-            # check_out flow: tìm bản ghi check-in chưa check-out
-            attendance = self.search([('employee_id', '=', employee_id), ('check_out', '=', False)], limit=1, order='check_in desc')
-            if not attendance:
-                raise UserError(_('Không tìm thấy bản ghi chấm công vào để kết thúc.'))
-            attendance.write({
-                'check_out': fields.Datetime.now(),
-                'check_out_note': note,
-                'check_out_location': location,
-                'check_out_ip': self._get_client_ip(),
-                'attendance_type_id': attendance_type_id or attendance.attendance_type_id.id,
-                'quantity': quantity or attendance.quantity,
-            })
-            attendance.invalidate_cache()
-            return attendance
+            raise UserError(_("Hợp đồng %s không xác định loại fulltime/parttime.") % contract.name)
 
 
-    def _get_client_ip(self):
-        if request:
-            return request.httprequest.environ.get('REMOTE_ADDR', '') or ''
-        return ''
+    # def _get_client_ip(self):  # Đã bỏ không sử dụng IP
+    #     if request:
+    #         return request.httprequest.environ.get('REMOTE_ADDR', '') or ''
+    #     return ''
 
     # Helper: tổng hợp công cho 1 tháng (có thể gọi qua cron)
     @api.model
@@ -380,6 +487,9 @@ class HrEmployee(models.Model):
 
     # Mã nhân viên giữ nguyên hoặc override bằng ir.sequence (gợi ý)
     employee_code = fields.Char('Mã nhân viên', readonly=True, copy=False, default='New')
+
+    # PIN cho kiosk chấm công
+    pin = fields.Char('PIN Kiosk', size=6, help='Mã PIN 4-6 số để chấm công qua kiosk')
 
     # Work mode và quy định số ngày công
     work_mode = fields.Selection([('fulltime', 'Fulltime'), ('parttime', 'Parttime')], string='Kiểu làm việc', default='fulltime')

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="report_offboarding_assets_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <div class="page">
+
+                    <!-- Header -->
+                    <div class="row" style="margin-bottom:20px;">
+                        <div class="col-6" style="float:left; width:60%;">
+                            <h3>CÔNG TY TNHH SX TM FOR HER FASHION</h3>
+                            <p><strong>Địa chỉ:</strong> 42 Võ Văn Ngân, Phường Trường Thọ, TP. Thủ Đức, TP. Hồ Chí Minh.</p>
+                            <p><strong>Điện thoại:</strong> 0317689318 - <strong>Fax:</strong> 0317689318</p>
+                            <p><strong>Mã số thuế:</strong> 0317689318</p>
+                        </div>
+
+                        <!-- Logo góc phải -->
+                        <div class="col-6" style="float:right; width:35%; text-align:right;">
+                            <img src="/offboarding_assets/static/description/logo.jpg" 
+                                 style="max-height:180px;" alt="Company Logo"/>
+                        </div>
+                    </div>
+
+                    <!-- Tiêu đề căn giữa -->
+                    <div style="clear:both; text-align:center; margin-top:30px; margin-bottom:20px;">
+                        <h2 style="text-transform:uppercase; text-decoration:underline;">
+                            BIÊN BẢN THU HỒI TÀI SẢN
+                        </h2>
+                    </div>
+
+                    <!-- Thông tin nhân viên -->
+                    <div style="margin-top:20px;">
+                        <p><strong>Nhân viên:</strong> <span t-field="doc.employee_id.name"/></p>
+                        <p><strong>Ngày nghỉ việc dự kiến:</strong> <span t-field="doc.resignation_date"/></p>
+                        <p><strong>Hạn hoàn trả:</strong> <span t-field="doc.deadline_date"/></p>
+                    </div>
+
+                    <!-- Danh mục tài sản -->
+                    <div style="margin-top:20px;">
+                        <h4>Danh mục tài sản thu hồi</h4>
+                        <table style="width:100%; border-collapse:collapse; margin-top:10px;">
+                            <thead style="background:#f2f2f2;">
+                                <tr>
+                                    <th style="border:1px solid #000; padding:6px; text-align:center;">Tên tài sản</th>
+                                    <th style="border:1px solid #000; padding:6px; text-align:center;">Số serial</th>
+                                    <th style="border:1px solid #000; padding:6px; text-align:center;">Ghi chú kiểm tra / Biên bản</th>
+                                    <th style="border:1px solid #000; padding:6px; text-align:center;">Kết quả hoàn trả</th>
+                                    <th style="border:1px solid #000; padding:6px; text-align:center;">Số tiền bồi thường</th>
+                                    <th style="border:1px solid #000; padding:6px; text-align:center;">Ảnh minh chứng</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="doc.line_ids" t-as="line">
+                                    <td style="border:1px solid #000; padding:6px;">
+                                        <span t-esc="line.name or ''"/>
+                                    </td>
+                                    <td style="border:1px solid #000; padding:6px;">
+                                        <span t-esc="line.serial_no or ''"/>
+                                    </td>
+                                    <td style="border:1px solid #000; padding:6px; text-align:center;">
+                                        <span t-esc="line.check_notes or ''"/>
+                                    </td>
+                                    <td style="border:1px solid #000; padding:6px; text-align:center;">
+                                        <span t-esc="dict(line.fields_get(allfields=['return_status'])['return_status']['selection']).get(line.return_status, '')"/>
+                                    </td>
+                                    <td style="border:1px solid #000; padding:6px; text-align:right;">
+                                        <span t-esc="line.compensation_amount or 0.0"/>
+                                    </td>
+                                    <!-- Ảnh minh chứng -->
+                                    <td style="border:1px solid #000; padding:6px; text-align:center;">
+                                        <t t-foreach="line.evidence_ids" t-as="img">
+                                            <img t-att-src="'/web/image/%s/%s/%s' % (img._name, img.id, 'datas')" 
+                                                style="max-height:80px; max-width:120px; margin:2px;"/>
+                                        </t>
+                                    </td>    
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p style="text-align:right; margin-top:10px;">
+                            <strong>Tổng bồi thường:</strong>
+                            <span t-esc="doc.total_compensation"/>
+                        </p>
+                    </div>
+
+                    <!-- Chữ ký -->
+                    <div style="margin-top:60px;">
+                        <table style="width:100%; text-align:center; border:0;">
+                            <tr>
+                                <td>
+                                    <strong>Nhân viên</strong><br/>
+                                    <span style="font-size:12px; font-style:italic;">
+                                        (Ký và ghi rõ họ tên)
+                                    </span>
+                                </td>
+                                <td>
+                                    <strong>Quản lý chi nhánh</strong><br/>
+                                    <span style="font-size:12px; font-style:italic;">
+                                        (Ký và ghi rõ họ tên)
+                                    </span>
+                                </td>
+                                <td>
+                                    <strong>Ban Giám đốc</strong><br/>
+                                    <span style="font-size:12px; font-style:italic;">
+                                        (Ký và ghi rõ họ tên)
+                                    </span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

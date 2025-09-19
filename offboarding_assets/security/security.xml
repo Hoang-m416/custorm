@@ -1,0 +1,22 @@
+<odoo>
+    <!-- Các nhóm quyền theo cơ cấu Forher -->
+    <record id="group_offb_user" model="res.groups">
+        <field name="name">Thu hồi - Người dùng (QL Chi nhánh)</field>
+        <field name="implied_ids" eval="[(4, ref('forher_company_overview.forher_group_branch_manager'))]"/>
+    </record>
+
+    <record id="group_offb_accounting" model="res.groups">
+        <field name="name">Thu hồi - Kế toán</field>
+        <field name="implied_ids" eval="[(4, ref('forher_company_overview.forher_group_employee'))]"/>
+    </record>
+
+    <record id="group_offb_board" model="res.groups">
+        <field name="name">Thu hồi - Ban giám đốc</field>
+        <field name="implied_ids" eval="[(4, ref('forher_company_overview.forher_group_board'))]"/>
+    </record>
+
+    <record id="group_offb_admin" model="res.groups">
+        <field name="name">Thu hồi - Quản trị</field>
+        <field name="implied_ids" eval="[(4, ref('group_offb_user')), (4, ref('group_offb_accounting')), (4, ref('group_offb_board'))]"/>
+    </record>
+</odoo>

@@ -1,0 +1,10 @@
+<odoo>
+    <record id="action_report_offboarding_assets" model="ir.actions.report">
+        <field name="name">Biên bản thu hồi tài sản</field>
+        <field name="model">forher.offboarding.assets</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">offboarding_assets.report_offboarding_assets_document</field>
+        <field name="report_file">offboarding_assets.report_offboarding_assets_document</field>
+        <field name="print_report_name">'Bien_ban_thu_hoi_' + object.name</field>
+    </record>
+</odoo>

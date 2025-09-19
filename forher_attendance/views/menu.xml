@@ -4,66 +4,100 @@
     <!-- Menu gốc Chấm công -->
     <menuitem id="menu_forher_attendance_root"
               name="Chấm công"
-              sequence="20"/>
+              sequence="20"
+              groups="forher_company_overview.forher_group_board,forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_employee"/>
 
-    <!-- Action Tổng quan cho Quản lý - hiển thị nhân viên -->
+    <!-- Action Tổng quan cho Quản lý/Giám đốc -->
     <record id="action_manager_overview" model="ir.actions.act_window">
       <field name="name">Tổng quan nhân viên</field>
       <field name="res_model">hr.employee</field>
       <field name="view_mode">kanban,list,form</field>
-      <field name="domain">[('parent_id', '=', uid)]</field>
-      <field name="context">{
-        'search_default_my_team': 1,
-        'search_default_active': 1
-      }</field>
+      <field name="context">{"search_default_active": 1}</field>
       <field name="help" type="html">
-        <p class="o_view_nocontent_smiling_face">
-          Tổng quan nhân viên và chấm công
-        </p>
+        <p class="o_view_nocontent_smiling_face">Tổng quan nhân viên và chấm công</p>
       </field>
     </record>
 
-    <!-- Action Lịch chấm công cho Quản lý -->
+    <!-- Action Lịch chấm công -->
     <record id="action_attendance_calendar_manager" model="ir.actions.act_window">
       <field name="name">Lịch chấm công</field>
       <field name="res_model">hr.attendance</field>
       <field name="view_mode">calendar,list,form</field>
-      <field name="domain">[('employee_id.parent_id', '=', uid)]</field>
-      <field name="context">{
-        'search_default_this_month': 1
-      }</field>
+      <field name="context">{"search_default_this_month": 1}</field>
       <field name="help" type="html">
-        <p class="o_view_nocontent_smiling_face">
-          Lịch chấm công của nhân viên
-        </p>
-        <p>
-          Xem lịch chấm công theo tháng, tuần hoặc ngày.
-        </p>
+        <p class="o_view_nocontent_smiling_face">Lịch chấm công của nhân viên</p>
+        <p>Xem lịch chấm công theo tháng, tuần hoặc ngày.</p>
       </field>
     </record>
+
+    <!-- Menu Tổng quan -->
+    <menuitem id="menu_manager_overview"
+              name="Tổng quan nhân viên"
+              parent="menu_forher_attendance_root"
+              action="action_manager_overview"
+              groups="forher_company_overview.forher_group_board,forher_company_overview.forher_group_branch_manager"
+              sequence="0"/>
+
+    <!-- Menu Lịch chấm công -->
+    <menuitem id="menu_attendance_calendar"
+              name="Lịch chấm công"
+              parent="menu_forher_attendance_root"
+              action="action_attendance_calendar_manager"
+              groups="forher_company_overview.forher_group_board,forher_company_overview.forher_group_branch_manager"
+              sequence="1"/>
 
     <!-- Dashboard cá nhân -->
     <menuitem id="menu_my_attendance"
               name="Chấm công của tôi"
               parent="menu_forher_attendance_root"
               action="action_attendance_dashboard"
+              groups="forher_company_overview.forher_group_employee,forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board"
               sequence="2"/>
 
-    <!-- Menu chấm công nhân viên -->
+    <!-- Chấm công nhân viên -->
     <menuitem id="menu_attendance_employee"
               name="Chấm công nhân viên"
               parent="menu_forher_attendance_root"
               action="hr_attendance.hr_attendance_action"
-              groups="forher_company_overview.forher_group_board,forher_company_overview.forher_group_branch_manager,base.group_system"
+              groups="forher_company_overview.forher_group_board,forher_company_overview.forher_group_branch_manager"
               sequence="5"/>
 
-    <!-- Quản lý chấm công (chỉ manager) -->
-    <menuitem id="menu_attendance_management"
-              name="Tổng quan"
-              parent="menu_forher_attendance_root"
-              action="hr_attendance.hr_attendance_action"
-              groups="forher_company_overview.forher_group_board,forher_company_overview.forher_group_branch_manager,base.group_system"
-              sequence="1"/>
+    <!-- Action báo cáo -->
+    <record id="action_forher_attendance_report" model="ir.actions.act_window">
+      <field name="name">Báo cáo chấm công</field>
+      <field name="res_model">hr.attendance</field>
+      <field name="view_mode">list,pivot,graph</field>
+    </record>
 
+    <!-- Menu báo cáo -->
+    <menuitem id="menu_attendance_report"
+              name="Báo cáo chấm công"
+              parent="menu_forher_attendance_root"
+              action="action_forher_attendance_report"
+              groups="forher_company_overview.forher_group_board,forher_company_overview.forher_group_branch_manager"
+              sequence="10"/>
+
+    <!-- Quản lý chấm công: chỉ Giám đốc & Quản lý CN -->
+    <menuitem id="menu_attendance_management"
+          name="Quản lý chấm công"
+          parent="menu_forher_attendance_root"
+          action="forher_attendance.forher_attendance_action_manager"
+          groups="forher_company_overview.forher_group_board,forher_company_overview.forher_group_branch_manager"
+          sequence="20"/>
+
+    <!-- Action URL Kiosk (đặt trước menu) -->
+    <record id="action_forher_kiosk_url" model="ir.actions.act_url">
+      <field name="name">Mở Kiosk</field>
+      <field name="url">/forher_attendance/kiosk</field>
+      <field name="target">self</field>
+    </record>
+
+    <!-- Menu Kiosk -->
+    <menuitem id="menu_attendance_kiosk"
+              name="Chế độ Kiosk"
+              parent="menu_forher_attendance_root"
+              action="action_forher_kiosk_url"
+              groups="forher_company_overview.forher_group_employee,forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board"
+              sequence="3"/>
   </data>
 </odoo>

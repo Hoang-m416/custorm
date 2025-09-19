@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+
+    <template id="kiosk_form" name="Forher Kiosk">
+      <t t-call="web.layout">
+        <t t-call-assets="forher_attendance.assets_kiosk"/>
+        <div class="o_container" style="max-width:560px;margin:auto;padding:32px;">
+          <div class="fk-card">
+            <h2 class="fk-title">Chấm công (Kiosk)</h2>
+            <div class="fk-branch-name" style="text-align:center;margin-bottom:16px;color:#9fb0d6;font-size:14px;">
+              <i class="fa fa-building-o"></i> <t t-esc="kiosk_company_name or 'Chi nhánh'"/>
+            </div>
+
+            <t t-if="error">
+              <div class="alert alert-danger" role="alert">
+                <i class="fa fa-exclamation-triangle"></i>
+                <t t-esc="error"/>
+              </div>
+            </t>
+
+            <form id="fk-form" action="/forher_attendance/kiosk/punch" method="post" class="o_form">
+
+              <!-- Chọn nhân viên -->
+              <div class="form-group fk-field">
+                <label class="fk-label">Chọn nhân viên</label>
+                <select name="employee_id" class="form-control fk-select">
+                  <option value="">-- Không chọn (dùng PIN/Mã) --</option>
+                  <t t-foreach="employees or []" t-as="emp">
+                    <option t-att-value="emp.id">
+                      <t t-esc="emp.name"/><t t-if="emp.employee_code"> [<t t-esc="emp.employee_code"/>]</t>
+                    </option>
+                  </t>
+                </select>
+                <div class="fk-hint">Nếu chọn nhân viên, bạn phải nhập đúng PIN của nhân viên đó.</div>
+              </div>
+
+              <!-- PIN + Keypad -->
+              <div class="fk-pin-wrap fk-field">
+                <label class="fk-label">PIN</label>
+
+                <div class="fk-pin-input">
+                  <input id="fk-pin" type="password" name="pin" class="form-control"
+                         placeholder="••••" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code"/>
+                  <button class="fk-eye" type="button" title="Hiện/ẩn PIN" aria-label="Hiện hoặc ẩn PIN">
+                    <span class="fk-eye-icon">👁️</span>
+                  </button>
+                </div>
+
+                <div class="fk-keypad" id="fk-keypad">
+                  <button type="button" class="fk-key" data-key="1">1</button>
+                  <button type="button" class="fk-key" data-key="2">2</button>
+                  <button type="button" class="fk-key" data-key="3">3</button>
+
+                  <button type="button" class="fk-key" data-key="4">4</button>
+                  <button type="button" class="fk-key" data-key="5">5</button>
+                  <button type="button" class="fk-key" data-key="6">6</button>
+
+                  <button type="button" class="fk-key" data-key="7">7</button>
+                  <button type="button" class="fk-key" data-key="8">8</button>
+                  <button type="button" class="fk-key" data-key="9">9</button>
+
+                  <button type="button" class="fk-key fk-key-func" data-key="del">⌫</button>
+                  <button type="button" class="fk-key" data-key="0">0</button>
+                  <button type="button" class="fk-key fk-key-func" data-key="clr">C</button>
+                </div>
+              </div>
+
+              <div class="fk-sep">— hoặc —</div>
+
+              <!-- Mã NV / Barcode -->
+              <div class="form-group fk-field">
+                <label class="fk-label">Mã nhân viên / Barcode</label>
+                <input type="text" name="code" class="form-control" placeholder="Nhập mã NV hoặc quét mã"/>
+              </div>
+
+              <input type="hidden" name="token"
+                     t-att-value="request.env['ir.config_parameter'].sudo().get_param('forher_attendance.kiosk_token', '')"/>
+
+              <button type="submit" class="btn btn-primary btn-block fk-submit">
+                <i class="fa fa-clock-o"></i> Chấm công
+              </button>
+            </form>
+          </div>
+        </div>
+      </t>
+    </template>
+
+    <!-- Template hiển thị kết quả thành công -->
+    <template id="kiosk_success" name="Kiosk Success">
+      <t t-call="web.layout">
+        <t t-call-assets="forher_attendance.assets_kiosk"/>
+        <div class="o_container" style="max-width:560px;margin:auto;padding:32px;">
+          <div class="fk-card text-center">
+            <h2 class="fk-title">
+              <i class="fa fa-check-circle" style="color:#28a745;margin-right:8px;"/>
+              Chấm công thành công!
+            </h2>
+            
+            <div style="margin:24px 0;">
+              <div style="font-size:18px;margin-bottom:12px;">
+                <strong><t t-esc="employee.name"/></strong>
+              </div>
+              
+              <div style="font-size:16px;color:#9fb0d6;margin-bottom:8px;">
+                <t t-if="action == 'checkin'">
+                  <i class="fa fa-sign-in" style="color:#28a745;"/> Đã check-in
+                </t>
+                <t t-else="">
+                  <i class="fa fa-sign-out" style="color:#ffc107;"/> Đã check-out  
+                </t>
+              </div>
+              
+              <div style="font-size:14px;color:#9fb0d6;">
+                Thời gian: <t t-esc="datetime.datetime.now().strftime('%H:%M:%S - %d/%m/%Y')"/>
+              </div>
+              
+              <t t-if="location">
+                <div style="font-size:12px;color:#9fb0d6;margin-top:8px;">
+                  Địa điểm: <t t-esc="location"/>
+                </div>
+              </t>
+            </div>
+
+            <a href="/forher_attendance/kiosk" class="btn btn-primary fk-submit">
+              <i class="fa fa-refresh"/> Chấm công tiếp
+            </a>
+          </div>
+        </div>
+      </t>
+    </template>
+
+    <!-- Template hiển thị khi bị chặn -->
+    <template id="kiosk_blocked" name="Kiosk Blocked">
+      <t t-call="web.layout">
+        <t t-call-assets="forher_attendance.assets_kiosk"/>
+        <div class="o_container" style="max-width:560px;margin:auto;padding:32px;">
+          <div class="fk-card text-center">
+            <h2 class="fk-title">
+              <i class="fa fa-exclamation-triangle" style="color:#dc3545;margin-right:8px;"/>
+              Truy cập bị từ chối
+            </h2>
+            
+            <div style="margin:24px 0;">
+              <div class="alert alert-danger" style="border-radius:12px;">
+                <t t-esc="reason"/>
+              </div>
+            </div>
+
+            <div class="fk-footnote">
+              Liên hệ quản trị viên để được cấp quyền truy cập.
+            </div>
+          </div>
+        </div>
+      </t>
+    </template>
+
+  </data>
+</odoo>

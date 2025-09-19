@@ -41,7 +41,15 @@
                             <field name="date_start" string="Ngày bắt đầu"/>
                             <field name="date_end" string="Ngày kết thúc"/>
                             <field name="trial_date_end" string="Ngày kết thúc thử việc"/>
-                            <field name="resource_calendar_id" string="Lịch làm việc"/>
+                            <field name="calendar_id"/>
+                            <field name="attendance_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="dayofweek"/>
+                                    <field name="hour_from"/>
+                                    <field name="hour_to"/>
+                                </list>
+                            </field>
                         </group>
                     </group>
                     <notebook>

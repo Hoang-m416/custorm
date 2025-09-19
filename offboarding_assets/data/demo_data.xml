@@ -1,0 +1,126 @@
+<odoo noupdate="1">
+    <!-- =======================
+         Công ty / Chi nhánh
+    ======================== -->
+    <record id="company_branch_hn" model="res.company">
+        <field name="name">FORHER - CMT8</field>
+        <field name="email">hn@forher.local</field>
+        <field name="phone">024-3710-0000</field>
+        <field name="street">Tầng 10, Tòa nhà ABC</field>
+        <field name="city">HCM</field>
+        <field name="country_id" ref="base.vn"/>
+    </record>
+
+    <!-- =======================
+         Người dùng (mật khẩu: Forher@123)
+         LƯU Ý: phải set cả company_ids
+    ======================== -->
+    <!-- Nhân viên -->
+    <record id="user_employee_demo" model="res.users">
+        <field name="name">Nguyễn Văn A</field>
+        <field name="login">nva@forher.local</field>
+        <field name="email">nva@forher.local</field>
+        <field name="password">Forher@123</field>
+        <field name="company_id" ref="company_branch_hn"/>
+        <field name="company_ids" eval="[(6,0,[ref('company_branch_hn')])]"/>
+        <field name="lang">vi_VN</field>
+        <field name="tz">Asia/Ho_Chi_Minh</field>
+        <field name="groups_id" eval="[(6,0,[ref('base.group_user')])]"/>
+    </record>
+
+    <!-- Quản lý chi nhánh -->
+    <record id="user_manager_demo" model="res.users">
+        <field name="name">Trần Thị B (QL)</field>
+        <field name="login">manager.hn@forher.local</field>
+        <field name="email">manager.hn@forher.local</field>
+        <field name="password">Forher@123</field>
+        <field name="company_id" ref="company_branch_hn"/>
+        <field name="company_ids" eval="[(6,0,[ref('company_branch_hn')])]"/>
+        <field name="lang">vi_VN</field>
+        <field name="tz">Asia/Ho_Chi_Minh</field>
+        <field name="groups_id" eval="[(6,0,[ref('base.group_user'), ref('offboarding_assets.group_offb_user')])]"/>
+    </record>
+
+    <!-- Kế toán -->
+    <record id="user_accounting_demo" model="res.users">
+        <field name="name">Kế toán C</field>
+        <field name="login">accounting@forher.local</field>
+        <field name="email">accounting@forher.local</field>
+        <field name="password">Forher@123</field>
+        <field name="company_id" ref="company_branch_hn"/>
+        <field name="company_ids" eval="[(6,0,[ref('company_branch_hn')])]"/>
+        <field name="lang">vi_VN</field>
+        <field name="tz">Asia/Ho_Chi_Minh</field>
+        <field name="groups_id" eval="[(6,0,[ref('base.group_user'), ref('offboarding_assets.group_offb_accounting')])]"/>
+    </record>
+
+    <!-- Ban Giám đốc -->
+    <record id="user_board_demo" model="res.users">
+        <field name="name">Ban Giám đốc D</field>
+        <field name="login">board@forher.local</field>
+        <field name="email">board@forher.local</field>
+        <field name="password">Forher@123</field>
+        <field name="company_id" ref="company_branch_hn"/>
+        <field name="company_ids" eval="[(6,0,[ref('company_branch_hn')])]"/>
+        <field name="lang">vi_VN</field>
+        <field name="tz">Asia/Ho_Chi_Minh</field>
+        <field name="groups_id" eval="[(6,0,[ref('base.group_user'), ref('offboarding_assets.group_offb_board')])]"/>
+    </record>
+
+    <!-- =======================
+         Nhân viên (liên kết user)
+    ======================== -->
+    <record id="employee_manager_demo" model="hr.employee">
+        <field name="name">Trần Thị B</field>
+        <field name="work_email">manager.hn@forher.local</field>
+        <field name="user_id" ref="user_manager_demo"/>
+        <field name="company_id" ref="company_branch_hn"/>
+        <field name="work_phone">0903 000 111</field>
+        <field name="job_title">Quản lý Chi nhánh</field>
+    </record>
+
+    <record id="employee_demo" model="hr.employee">
+        <field name="name">Nguyễn Văn A</field>
+        <field name="work_email">nva@forher.local</field>
+        <field name="user_id" ref="user_employee_demo"/>
+        <field name="company_id" ref="company_branch_hn"/>
+        <field name="work_phone">0906 123 456</field>
+        <field name="job_title">Nhân viên Kinh doanh</field>
+        <field name="parent_id" ref="employee_manager_demo"/>
+    </record>
+
+    <!-- =======================
+         Hợp đồng lao động
+    ======================== -->
+    <record id="contract_demo" model="forher.hr.contract">
+        <field name="name">HĐLĐ Nguyễn Văn A</field>
+        <field name="employee_id" ref="employee_demo"/>
+        <field name="company_id" ref="company_branch_hn"/>
+        <field name="state">open</field>
+        <field name="wage">15000000</field>
+    </record>
+
+    <!-- =======================
+         Thiết bị (Maintenance)
+    ======================== -->
+    <record id="eq_cat_it" model="maintenance.equipment.category">
+        <field name="name">CNTT - Thiết bị làm việc</field>
+        <field name="company_id" ref="company_branch_hn"/>
+    </record>
+
+    <record id="asset_laptop_demo" model="maintenance.equipment">
+        <field name="name">Laptop Dell XPS 13</field>
+        <field name="category_id" ref="eq_cat_it"/>
+        <field name="serial_no">SN-LAP-001</field>
+        <field name="employee_id" ref="employee_demo"/>
+        <field name="company_id" ref="company_branch_hn"/>
+    </record>
+
+    <record id="asset_phone_demo" model="maintenance.equipment">
+        <field name="name">Điện thoại iPhone 13 128GB</field>
+        <field name="category_id" ref="eq_cat_it"/>
+        <field name="serial_no">SN-PHONE-013</field>
+        <field name="employee_id" ref="employee_demo"/>
+        <field name="company_id" ref="company_branch_hn"/>
+    </record>
+</odoo>

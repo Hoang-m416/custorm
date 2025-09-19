@@ -1,0 +1,55 @@
+<odoo>
+  <template id="report_offboarding_assets">
+    <t t-call="web.html_container">
+      <t t-foreach="docs" t-as="o">
+        <div class="page">
+          <h2 style="text-align:center">BIÊN BẢN THU HỒI TÀI SẢN</h2>
+          <p><b>Mã hồ sơ:</b> <t t-esc="o.name"/></p>
+          <p><b>Nhân viên:</b> <t t-esc="o.employee_id.name"/> – <t t-esc="o.employee_id.work_email or ''"/></p>
+          <p><b>Chi nhánh:</b> <t t-esc="o.company_id.name"/></p>
+          <p><b>Ngày nghỉ việc dự kiến:</b> <t t-esc="o.resignation_date"/></p>
+          <p><b>Hạn hoàn trả:</b> <t t-esc="o.deadline_date"/></p>
+
+          <h4>Danh mục tài sản</h4>
+          <table class="table table-sm">
+            <thead>
+              <tr>
+                <th>#</th><th>Tài sản</th><th>S/N</th><th>Kết quả</th><th>Ghi chú</th><th>Bồi thường</th>
+              </tr>
+            </thead>
+            <tbody>
+              <t t-foreach="o.line_ids" t-as="l">
+                <tr>
+                  <td><t t-esc="l.id"/></td>
+                  <td><t t-esc="l.name or (l.equipment_id and l.equipment_id.name)"/></td>
+                  <td><t t-esc="l.serial_no or ''"/></td>
+                  <td><t t-esc="dict(l._fields['return_status'].selection).get(l.return_status)"/></td>
+                  <td><t t-esc="l.check_notes or ''"/></td>
+                  <td><t t-esc="l.compensation_amount"/></td>
+                </tr>
+              </t>
+            </tbody>
+          </table>
+
+          <p><b>Tổng bồi thường:</b> <t t-esc="o.total_compensation"/></p>
+
+          <br/>
+          <table class="table table-borderless">
+            <tr>
+              <td style="width:50%;text-align:center">
+                <b>Người lao động</b><br/>(Ký, ghi rõ họ tên)
+                <div style="height:80px"></div>
+                <span><t t-esc="o.employee_signed and 'ĐÃ KÝ ĐIỆN TỬ' or ''"/></span>
+              </td>
+              <td style="width:50%;text-align:center">
+                <b>Quản lý chi nhánh</b><br/>(Ký, ghi rõ họ tên)
+                <div style="height:80px"></div>
+                <span><t t-esc="o.manager_signed and 'ĐÃ KÝ ĐIỆN TỬ' or ''"/></span>
+              </td>
+            </tr>
+          </table>
+        </div>
+      </t>
+    </t>
+  </template>
+</odoo>

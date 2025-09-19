@@ -1,0 +1,41 @@
+# Vietnamese overrides for Maintenance menus
+#----------------------------------------------------------
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo 18.0\n"
+"POT-Creation-Date: 2025-09-15 00:00+0000\n"
+"PO-Revision-Date: 2025-09-15 00:00+0000\n"
+"Language: vi\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. module: maintenance
+#: model:ir.ui.menu,name:maintenance.menu_maintenance_root
+msgid "Maintenance"
+msgstr "Bảo trì"
+
+#. module: maintenance
+#: model:ir.ui.menu,name:maintenance.menu_maintenance_dashboard
+msgid "Dashboard"
+msgstr "Tổng quan"
+
+#. module: maintenance
+#: model:ir.ui.menu,name:maintenance.menu_maintenance
+msgid "Maintenance"
+msgstr "Bảo trì"
+
+#. module: maintenance
+#: model:ir.ui.menu,name:maintenance.menu_equipment
+msgid "Equipment"
+msgstr "Thiết bị"
+
+#. module: maintenance
+#: model:ir.ui.menu,name:maintenance.menu_maintenance_reporting
+msgid "Reporting"
+msgstr "Báo cáo"
+
+#. module: maintenance
+#: model:ir.ui.menu,name:maintenance.menu_maintenance_config
+msgid "Configuration"
+msgstr "Cấu hình"

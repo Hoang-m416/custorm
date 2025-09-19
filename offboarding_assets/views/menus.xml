@@ -1,0 +1,12 @@
+<odoo>
+  <menuitem id="menu_offb_root" name="Offboarding" parent="hr.menu_hr_root" sequence="26"/>
+
+  <record id="action_offb_assets" model="ir.actions.act_window">
+    <field name="name">Thu hồi tài sản</field>
+    <field name="res_model">forher.offboarding.assets</field>
+    <field name="view_mode">list,form</field> <!-- dùng list thay cho tree -->
+  </record>
+
+  <menuitem id="menu_offb_assets" name="Thu hồi tài sản"
+            parent="menu_offb_root" action="action_offb_assets" sequence="10"/>
+</odoo>

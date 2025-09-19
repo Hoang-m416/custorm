@@ -1,0 +1,26 @@
+<odoo>
+  <!-- Lịch làm việc FULLTIME 8:30–22:00 (T2–T6), chia 2 ca -->
+  <record id="resource_calendar_fulltime_830_2200" model="resource.calendar">
+    <field name="name">Fulltime 8:30–22:00 (T2–cn)</field>
+    <field name="company_id" ref="base.main_company"/>
+    <!-- CA FULL TIME mấy tiếng và có nghỉ trưa hay không? -->
+    <field name="attendance_ids" eval="[
+      (5, 0, 0),
+
+      (0, 0, {'name': 'Ca full', 'dayofweek': '0', 'hour_from': 8.5, 'hour_to': 22.0}),
+
+      (0, 0, {'name': 'Ca full', 'dayofweek': '1', 'hour_from': 8.5, 'hour_to': 22.0}),
+
+      (0, 0, {'name': 'Ca full', 'dayofweek': '2', 'hour_from': 8.5, 'hour_to': 22.0}),
+
+      (0, 0, {'name': 'Ca full', 'dayofweek': '3', 'hour_from': 8.5, 'hour_to': 22.0}),
+      
+      (0, 0, {'name': 'Ca full', 'dayofweek': '4', 'hour_from': 8.5, 'hour_to': 22.0}),
+
+    (0, 0, {'name': 'Ca full', 'dayofweek': '5', 'hour_from': 8.5, 'hour_to': 22.0}),
+    
+    (0, 0, {'name': 'Ca full', 'dayofweek': '6', 'hour_from': 8.5, 'hour_to': 22.0}),
+
+    ]"/>
+  </record>
+</odoo>

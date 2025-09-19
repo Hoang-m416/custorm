@@ -1,0 +1,10 @@
+<odoo>
+  <report
+    id="action_report_offboarding_assets"
+    model="forher.offboarding.assets"
+    string="Biên bản thu hồi tài sản"
+    report_type="qweb-pdf"
+    name="offboarding_assets.report_offboarding_assets"
+    file="offboarding_assets.report_offboarding_assets"
+  />
+</odoo>

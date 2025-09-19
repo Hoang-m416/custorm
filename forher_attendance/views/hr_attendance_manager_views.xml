@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+
+    <!-- Search view: có filter "Cần phê duyệt", "Nhân viên đang hoạt động" -->
+    <record id="view_hr_attendance_search_forher" model="ir.ui.view">
+      <field name="name">hr.attendance.search.forher</field>
+      <field name="model">hr.attendance</field>
+      <field name="arch" type="xml">
+        <search string="Chấm công">
+          <field name="employee_id"/>
+          <field name="date"/>
+
+          <filter name="need_approve" string="Cần phê duyệt" domain="[('state','=','confirmed')]"/>
+          <filter name="active_employees" string="Nhân viên đang hoạt động" domain="[('check_out','=',False)]"/>
+          <filter name="today" string="Hôm nay"
+                  domain="[('check_in','&gt;=', (context_today().strftime('%%Y-%%m-%%d 00:00:00'))),
+                           ('check_in','&lt;=', (context_today().strftime('%%Y-%%m-%%d 23:59:59')))]"/>
+
+          <group expand="0" string="Nhóm theo">
+            <filter name="grp_emp" string="Nhân viên" context="{'group_by':'employee_id'}"/>
+            <filter name="grp_date" string="Ngày" context="{'group_by':'date'}"/>
+            <!-- Bạn đã có field related branch_id (stored) -->
+            <filter name="grp_company" string="Chi nhánh" context="{'group_by':'branch_id'}"/>
+          </group>
+        </search>
+      </field>
+    </record>
+
+    <!-- List view giống ảnh: nhân viên, check in/out, thời gian, OT, badge trạng thái và 2 action -->
+    <record id="view_hr_attendance_list_forher" model="ir.ui.view">
+      <field name="name">hr.attendance.list.forher</field>
+      <field name="model">hr.attendance</field>
+      <field name="arch" type="xml">
+        <list string="Quản lý" create="0" delete="0" editable="bottom"
+              decoration-muted="state == 'validated'"
+              decoration-danger="state == 'rejected'">
+          <field name="employee_id"/>
+
+          <field name="check_in"/>
+          <field name="check_out"/>
+
+          <!-- Hiển thị HH:MM -->
+          <field name="worked_hours_float" widget="float_time"/>
+
+          <!-- Hai cột OT -->
+          <field name="ot_done" widget="float_time"/>
+          <field name="ot_balance" widget="float_time"/>
+
+          <!-- Badge trạng thái duyệt -->
+          <field name="state" widget="badge"
+                 options="{'color_map': {'confirmed':'warning','validated':'success','rejected':'danger','draft':'secondary'}}"/>
+        </list>
+      </field>
+    </record>
+
+    <!-- Form view: có sẵn của Odoo, có thể kế thừa sau nếu cần -->
+
+    <!-- Action quản lý chấm công (dùng list + search ở trên) -->
+    <record id="forher_attendance_action_manager" model="ir.actions.act_window">
+      <field name="name">Quản lý chấm công</field>
+      <field name="res_model">hr.attendance</field>
+      <field name="view_mode">list,form,calendar,pivot,graph</field>
+      <field name="search_view_id" ref="forher_attendance.view_hr_attendance_search_forher"/>
+      <field name="context">{ "search_default_need_approve": 1 }</field>
+      <field name="views" eval="[
+          (ref('forher_attendance.view_hr_attendance_list_forher'), 'list'),
+          (False, 'form'),
+          (False, 'calendar'),
+          (False, 'pivot'),
+          (False, 'graph')
+        ]"/>
+      <!-- chỉ hiện cho GĐ & QL CN -->
+      <field name="groups_id" eval="[(4, ref('forher_company_overview.forher_group_board')),
+                                      (4, ref('forher_company_overview.forher_group_branch_manager'))]"/>
+    </record>
+
+    <!-- Hai server actions gắn vào list (để hiện như nút toolbar) -->
+    <record id="action_batch_validate_attendance" model="ir.actions.server">
+      <field name="name">Phê duyệt</field>
+      <field name="model_id" ref="hr_attendance.model_hr_attendance"/>
+      <field name="binding_model_id" ref="hr_attendance.model_hr_attendance"/>
+      <field name="binding_view_types">list</field>
+      <field name="binding_type">action</field>
+      <field name="state">code</field>
+      <field name="code">records.action_validate()</field>
+      <field name="groups_id" eval="[(4, ref('forher_company_overview.forher_group_board')),
+                                      (4, ref('forher_company_overview.forher_group_branch_manager'))]"/>
+    </record>
+
+    <record id="action_batch_reject_attendance" model="ir.actions.server">
+      <field name="name">Từ chối</field>
+      <field name="model_id" ref="hr_attendance.model_hr_attendance"/>
+      <field name="binding_model_id" ref="hr_attendance.model_hr_attendance"/>
+      <field name="binding_view_types">list</field>
+      <field name="binding_type">action</field>
+      <field name="state">code</field>
+      <field name="code">records.action_reject()</field>
+      <field name="groups_id" eval="[(4, ref('forher_company_overview.forher_group_board')),
+                                      (4, ref('forher_company_overview.forher_group_branch_manager'))]"/>
+    </record>
+
+  </data>
+</odoo>

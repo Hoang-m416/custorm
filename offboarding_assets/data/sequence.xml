@@ -1,0 +1,8 @@
+<odoo>
+    <record id="seq_offb_assets" model="ir.sequence">
+        <field name="name">FORHER Offboarding</field>
+        <field name="code">forher.offboarding.assets</field>
+        <field name="prefix">OFFB/%(year)s/</field>
+        <field name="padding">5</field>
+    </record>
+</odoo>

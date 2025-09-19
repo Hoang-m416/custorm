@@ -1,0 +1,159 @@
+<odoo>
+  <!-- LIST -->
+  <record id="view_offb_list" model="ir.ui.view">
+    <field name="name">forher.offboarding.assets.list</field>
+    <field name="model">forher.offboarding.assets</field>
+    <field name="arch" type="xml">
+      <list string="Thu hồi tài sản">
+        <field name="name"/>
+        <field name="employee_id"/>
+        <field name="company_id"/>
+        <field name="resignation_date"/>
+        <field name="deadline_date"/>
+        <field name="issue_exists"/>
+        <field name="total_compensation"/>
+        <field name="state"/>
+      </list>
+    </field>
+  </record>
+
+  <!-- FORM (đã chuyển sang modifiers mới, không dùng states/attrs) -->
+  <record id="view_offb_form" model="ir.ui.view">
+    <field name="name">forher.offboarding.assets.form</field>
+    <field name="model">forher.offboarding.assets</field>
+    <field name="arch" type="xml">
+      <form string="Phiếu thu hồi tài sản" create="1" edit="1">
+        <header>
+    <field name="state" widget="statusbar"
+        options="{'draft':'secondary',
+                  'awaiting_return':'info',
+                  'in_review':'primary',
+                  'to_compensate':'warning',
+                  'to_sign':'teal',
+                  'to_approve':'darkblue',
+                  'done':'success',
+                  'cancel':'danger'}"/>
+
+    <!-- draft -->
+    <button name="action_generate_lines" string="Tự động liệt kê tài sản" type="object"
+            class="btn-primary btn-dynamic"
+            invisible="state != 'draft'"/>
+
+    <button name="action_send_notification" string="Gửi thông báo" type="object"
+            class="btn-secondary btn-dynamic"
+            invisible="state != 'draft'"/>
+
+    <!-- awaiting_return -->
+    <button name="action_start_review" string="Bắt đầu kiểm tra" type="object"
+            class="btn-secondary btn-dynamic"
+            invisible="state != 'awaiting_return'"/>
+
+    <!-- in_review -->
+    <button name="action_send_to_accounting" string="Chuyển Kế toán" type="object"
+            class="btn-warning btn-dynamic"
+            invisible="state != 'in_review' or issue_exists == False"/>
+
+    <!-- to_compensate -->
+    <button name="action_mark_accounting_done" string="Kế toán đã quyết toán" type="object"
+            class="btn-secondary btn-dynamic"
+            invisible="state != 'to_compensate'"/>
+
+    <!-- to_sign -->
+    <button name="action_generate_report" string="Lập biên bản" type="object"
+            class="btn-primary btn-dynamic"
+            invisible="state != 'to_sign'"/>
+    <button name="action_mark_signed" string="NV đã ký" type="object"
+            context="{'by':'employee'}"
+            class="btn-success btn-dynamic"
+            invisible="state != 'to_sign'"/>
+    <button name="action_mark_signed" string="QL đã ký" type="object"
+            context="{'by':'manager'}"
+            class="btn-info btn-dynamic"
+            invisible="state != 'to_sign'"/>
+
+    <!-- to_approve -->
+    <button name="action_approve" string="Phê duyệt" type="object"
+            class="btn-success btn-dynamic"
+            invisible="state != 'to_approve'"/>
+
+    <!-- cancel -->
+    <button name="action_reset_to_draft" string="Đưa về Nháp" type="object"
+            class="btn-secondary btn-dynamic"
+            invisible="state != 'cancel'"/>
+
+    <!-- mọi trạng thái trừ done -->
+    <button name="action_cancel" string="Hủy" type="object"
+            class="btn-danger btn-dynamic"
+            invisible="state == 'done'"/>
+</header>
+
+
+        <sheet>
+          <div class="oe_title"><h1><field name="name" readonly="1"/></h1></div>
+
+          <group>
+            <group>
+              <field name="employee_id" options="{'no_open': True}" required="1"/>
+              <field name="contract_id"/>
+              <field name="manager_id"/>
+            </group>
+            <group>
+              <field name="company_id" groups="base.group_multi_company"/>
+              <field name="resignation_date"/>
+              <field name="deadline_date" required="1"/>
+              <field name="issue_exists" readonly="1"/>
+              <field name="total_compensation" readonly="1"/>
+            </group>
+          </group>
+
+          <notebook>
+            <page string="Danh mục tài sản">
+              <!-- Bỏ context active_id; one2many tự gán khóa ngoại -->
+              <field name="line_ids" nolabel="1">
+                <list editable="bottom">
+                  <field name="name"/>
+                  <field name="equipment_id" options="{'no_open': True}"/>
+                  <field name="serial_no"/>
+                  <field name="return_status"/>
+                  <field name="check_notes"/>
+                  <field name="compensation_amount"/>
+                  <!-- Thêm upload ảnh minh chứng -->
+                  <field name="evidence_ids" widget="many2many_binary" filename="name"/>
+                </list>
+              </field>
+            </page>
+            <page string="Thông tin thêm">
+              <group>
+                <field name="reason"/>
+                <field name="employee_signed" readonly="1"/>
+                <field name="manager_signed" readonly="1"/>
+                <field name="accounting_done" readonly="1"/>
+              </group>
+            </page>
+            <page string="Trao đổi">
+              <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
+              <field name="message_ids" widget="mail_thread"/>
+            </page>
+          </notebook>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <!-- SEARCH (đã bỏ thẻ <group ...>, dùng filter group_by trực tiếp) -->
+  <record id="view_offb_search" model="ir.ui.view">
+    <field name="name">forher.offboarding.assets.search</field>
+    <field name="model">forher.offboarding.assets</field>
+    <field name="arch" type="xml">
+      <search>
+        <field name="name"/>
+        <field name="employee_id"/>
+        <filter name="f_issue" string="Có bồi thường" domain="[('issue_exists','=',True)]"/>
+        <filter name="f_not_done" string="Chưa hoàn tất" domain="[('state','not in',('done','cancel'))]"/>
+        <separator/>
+        <filter name="group_company" string="Nhóm theo Chi nhánh" context="{'group_by':'company_id'}"/>
+        <filter name="group_state" string="Nhóm theo Trạng thái" context="{'group_by':'state'}"/>
+      </search>
+    </field>
+  </record>
+</odoo>

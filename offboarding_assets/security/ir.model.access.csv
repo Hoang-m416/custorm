@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_offb_admin,Offboarding Assets Admin,model_forher_offboarding_assets,base.group_system,1,1,1,1
+access_offb_board,Offboarding Assets Board,model_forher_offboarding_assets,forher_company_overview.forher_group_board,1,0,0,0
+access_offb_manager,Offboarding Assets Branch Manager,model_forher_offboarding_assets,forher_company_overview.forher_group_branch_manager,1,1,1,1
+access_offb_acc,Offboarding Assets Accountant,model_forher_offboarding_assets,forher_company_overview.forher_group_accountant,1,1,0,0
+access_offb_employee,Offboarding Assets Employee,model_forher_offboarding_assets,forher_company_overview.forher_group_employee,1,1,1,0
+
+access_offb_line_admin,Offboarding Asset Line Admin,model_forher_offboarding_asset_line,base.group_system,1,1,1,1
+access_offb_line_board,Offboarding Asset Line Board,model_forher_offboarding_asset_line,forher_company_overview.forher_group_board,1,0,0,0
+access_offb_line_manager,Offboarding Asset Line Branch Manager,model_forher_offboarding_asset_line,forher_company_overview.forher_group_branch_manager,1,1,1,1
+access_offb_line_acc,Offboarding Asset Line Accountant,model_forher_offboarding_asset_line,forher_company_overview.forher_group_accountant,1,1,0,0

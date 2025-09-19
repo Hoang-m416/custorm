@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data>
+    <!-- KHÔNG inherit; định nghĩa bundle riêng của module -->
+    <template id="assets_kiosk" name="Forher Attendance - Kiosk Assets">
+      <link rel="stylesheet" href="/forher_attendance/static/src/css/kiosk.css"/>
+      <script type="text/javascript" src="/forher_attendance/static/src/js/kiosk.js"></script>
+    </template>
+  </data>
+</odoo>

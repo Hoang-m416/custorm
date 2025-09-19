@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <data noupdate="1">
+    
+    <!-- Vị trí cố định của kiosk -->
+    <record id="config_kiosk_location" model="ir.config_parameter">
+      <field name="key">forher_attendance.kiosk_location</field>
+      <field name="value">Store Front</field>
+    </record>
+    
+    <!-- Chi nhánh mà kiosk này phục vụ (ID của res.company) -->
+    <record id="config_kiosk_company_id" model="ir.config_parameter">
+      <field name="key">forher_attendance.kiosk_company_id</field>
+      <field name="value">1</field>
+    </record>
+    
+    <!-- Tên hiển thị của chi nhánh trên kiosk -->
+    <record id="config_kiosk_company_name" model="ir.config_parameter">
+      <field name="key">forher_attendance.kiosk_company_name</field>
+      <field name="value">Chi nhánh chính</field>
+    </record>
+    
+  </data>
+</odoo>

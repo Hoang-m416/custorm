@@ -31,43 +31,53 @@
 
         <!-- ================= FORM VIEW — LOCK ALL & MANAGER ENABLE ================= -->
     <record id="view_attendance_form_inherit" model="ir.ui.view">
-    <field name="name">hr.attendance.form.forher.notebook</field>
-    <field name="model">hr.attendance</field>
-    <field name="inherit_id" ref="hr_attendance.hr_attendance_view_form"/>
-    <field name="arch" type="xml">
-        <!-- Wrap existing sheet vào notebook -->
-        <xpath expr="//sheet" position="inside">
-            <notebook>
-                <page string="Thông tin cơ bản">
-                    <group>
-                        <field name="employee_id"/>
-                        <field name="branch_id" readonly="1"/>
-                        <field name="parent_company_id" readonly="1"/>
-                        <field name="contract_type_id" readonly="1"/>
-                        <field name="date" readonly="1"/>
-                    </group>
-                </page>
-                <!-- Thêm page mới -->
-                <page string="Thông tin mở rộng">
-                    <group string="Công &amp; Loại công">
-                        <field name="attendance_type_id"/>
-                        <field name="quantity"/>
-                        <field name="total_amount"/>
-                        <field name="is_late"/>
-                        <field name="is_early"/>
-                    </group>
-                    <group string="Người ghi nhận &amp; Quyền đối soát">
-                        <field name="recorded_by"/>
-                        <field name="is_public"/>
-                    </group>
-                    
-                </page>
-            </notebook>
-        </xpath>
-    </field>
-</record>
-
-
+        <field name="name">hr.attendance.form.forher</field>
+        <field name="model">hr.attendance</field>
+        <field name="inherit_id" ref="hr_attendance.hr_attendance_view_form"/>
+        <field name="arch" type="xml">
+            <form position="inside">
+                <header>
+                    <button name="action_confirm" string="Xác nhận" type="object" class="oe_highlight"
+                            groups="forher_attendance.group_attendance_user" invisible="state != 'draft'"/>
+                    <button name="action_validate" string="Duyệt" type="object" class="oe_highlight"
+                            groups="forher_attendance.group_attendance_manager" invisible="state != 'confirmed'"/>
+                    <button name="action_reject" string="Từ chối" type="object" class="btn-secondary"
+                            groups="forher_attendance.group_attendance_manager" invisible="state in ['draft', 'rejected']"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirmed,validated,rejected"/>
+                </header>
+            </form>
+            <field name="employee_id" position="after">
+                <field name="branch_id" readonly="1"/>
+                <field name="parent_company_id" readonly="1"/>
+                <field name="contract_type_id" readonly="1"/>
+                <field name="date" readonly="1"/>
+            </field>
+            <field name="worked_hours" position="after">
+                <group string="Công và Loại công">
+                    <field name="attendance_type_id"/>
+                    <field name="quantity"/>
+                    <field name="total_amount"/>
+                    <field name="is_late"/>
+                    <field name="is_early"/>
+                </group>
+                <group string="Ghi chú và Vị trí">
+                    <field name="check_in_note"/>
+                    <field name="check_out_note"/>
+                    <field name="check_in_location"/>
+                    <field name="check_out_location"/>
+                    <field name="note" colspan="2"/>
+                </group>
+                <group string="Người ghi nhận &amp; Quyền đối soát">
+                    <field name="recorded_by"/>
+                    <field name="is_public"/>
+                </group>
+                <!-- <group string="Thông tin kỹ thuật" groups="base.group_no_one">
+                    <field name="check_in_ip"/>
+                    <field name="check_out_ip"/>
+                </group> -->
+            </field>
+        </field>
+    </record>
 
 
     <!-- ================= SEARCH VIEW ================= -->
