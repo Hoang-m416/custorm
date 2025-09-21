@@ -1,0 +1,154 @@
+<odoo>
+    <!-- ========== VIEW CA LÀM VIỆC ========== -->
+    <record id="view_forher_shift_list" model="ir.ui.view">
+        <field name="name">forher.shift.list</field>
+        <field name="model">forher.shift</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="start_time"/>
+                <field name="end_time"/>
+                <field name="note"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_forher_shift_form" model="ir.ui.view">
+        <field name="name">forher.shift.form</field>
+        <field name="model">forher.shift</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="code" required="1"/>
+                        <field name="name"/>
+                        <field name="start_time"/>
+                        <field name="end_time"/>
+                        <field name="note"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ========== VIEW PHÂN CA (ASSIGNMENT) ========== -->
+    <record id="view_forher_shift_assignment_calendar" model="ir.ui.view">
+        <field name="name">forher.shift.assignment.calendar</field>
+        <field name="model">forher.shift.assignment</field>
+        <field name="arch" type="xml">
+            <calendar string="Phân ca" date_start="date" color="color" __validate__="1">
+                <field name="employee_ids"/>
+                <field name="shift_id"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="view_forher_shift_assignment_list" model="ir.ui.view">
+        <field name="name">forher.shift.assignment.list</field>
+        <field name="model">forher.shift.assignment</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="date"/>
+                <field name="employee_ids"/>
+                <field name="shift_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_forher_shift_assignment_form" model="ir.ui.view">
+        <field name="name">forher.shift.assignment.form</field>
+        <field name="model">forher.shift.assignment</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <!-- Chọn nhiều nhân viên -->
+                        <field name="employee_ids" widget="many2many_tags"/>
+                        <field name="shift_id"/>
+                        <field name="date"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ========== VIEW VI PHẠM ========== -->
+    <record id="view_violation_record_list" model="ir.ui.view">
+        <field name="name">forher.violation.record.list</field>
+        <field name="model">forher.violation.record</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="date"/>
+                <field name="employee_id"/>
+                <field name="violation_rule_id"/>
+                <field name="attendance_id"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_violation_record_form" model="ir.ui.view">
+        <field name="name">forher.violation.record.form</field>
+        <field name="model">forher.violation.record</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="employee_id"/>
+                        <field name="attendance_id"/>
+                        <field name="violation_rule_id"/>
+                        <field name="date"/>
+                        <field name="note"/>
+                        <field name="state"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- ========== ACTIONS & MENU ========== -->
+    <menuitem id="menu_forher_shift_root"
+              name="Quản lý Ca &amp; Vi phạm"
+              parent="menu_forher_attendance_root"
+              groups="forher_company_overview.forher_group_board,forher_company_overview.forher_group_branch_manager,base.group_system"/>
+
+    <!-- Ca làm việc -->
+    <record id="action_forher_shift" model="ir.actions.act_window">
+        <field name="name">Ca làm việc</field>
+        <field name="res_model">forher.shift</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <menuitem id="menu_forher_shift"
+              name="Ca làm việc"
+              parent="menu_forher_shift_root"
+              action="action_forher_shift"
+              groups="forher_company_overview.forher_group_board,forher_company_overview.forher_group_branch_manager,base.group_system"/>
+
+    <!-- Phân ca -->
+    <record id="action_forher_shift_assignment" model="ir.actions.act_window">
+    <field name="name">Phân ca</field>
+    <field name="res_model">forher.shift.assignment</field>
+    <field name="view_mode">list,form</field>
+    <field name="view_id" ref="view_forher_shift_assignment_list"/>
+</record>
+
+
+    <menuitem id="menu_forher_shift_assignment"
+              name="Phân ca"
+              parent="menu_forher_shift_root"
+              action="action_forher_shift_assignment"
+              groups="forher_company_overview.forher_group_board,forher_company_overview.forher_group_branch_manager,base.group_system"/>
+
+    <!-- Vi phạm -->
+    <record id="action_forher_violation_record" model="ir.actions.act_window">
+        <field name="name">Ghi nhận Vi phạm</field>
+        <field name="res_model">forher.violation.record</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <menuitem id="menu_forher_violation_record"
+              name="Vi phạm"
+              parent="menu_forher_shift_root"
+              action="action_forher_violation_record"
+              groups="forher_company_overview.forher_group_board,forher_company_overview.forher_group_branch_manager,base.group_system"/>
+</odoo>

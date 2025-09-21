@@ -37,6 +37,23 @@ from datetime import datetime, time
 class HrAttendance(models.Model):
     _inherit = 'hr.attendance'
 
+    date_start = fields.Datetime(
+        string='Bắt đầu',
+        compute='_compute_date_start_stop',
+        store=True
+    )
+    date_stop = fields.Datetime(
+        string='Kết thúc',
+        compute='_compute_date_start_stop',
+        store=True
+    )
+
+    @api.depends('check_in', 'check_out')
+    def _compute_date_start_stop(self):
+        for rec in self:
+            rec.date_start = rec.check_in
+            rec.date_stop = rec.check_out or (rec.check_in + timedelta(hours=8) if rec.check_in else False)
+
     is_late = fields.Boolean(string="Đi muộn", compute="_compute_late_early", store=True)
     is_early = fields.Boolean(string="Về sớm", compute="_compute_late_early", store=True)
 
@@ -59,31 +76,134 @@ class HrAttendance(models.Model):
         default=0.0
     )
     
+    @api.depends('check_in', 'check_out', 'attendance_type_id')
+    def _compute_total_amount(self):
+        HOURLY_RATE = 27000
+        for rec in self:
+            if rec.attendance_type_id and rec.worked_hours_float:
+                rec.total_amount = rec.worked_hours_float * HOURLY_RATE
+                rec.quantity = rec.worked_hours_float  # hiển thị số giờ
+            else:
+                rec.total_amount = 0.0
+                rec.quantity = 0.0
+
+
+    @api.depends("check_in", "check_out", "employee_id")
+    def _compute_ot_hours(self):
+        for rec in self:
+            rec.ot_done = 0.0
+            if not rec.check_in or not rec.check_out or not rec.employee_id:
+                continue
+
+            # Lấy timezone
+            user_tz = pytz.timezone(self.env.user.tz or "UTC")
+            local_in = rec.check_in.astimezone(user_tz)
+            local_out = rec.check_out.astimezone(user_tz)
+            d = local_in.date()
+
+            # Tìm phân ca
+            assignment = self.env['forher.shift.assignment'].search([
+                ('employee_ids', 'in', rec.employee_id.id),
+                ('date', '=', d),
+            ], limit=1)
+            if not assignment or not assignment.shift_id:
+                continue
+
+            shift = assignment.shift_id
+
+            # Chuyển float -> time
+            def float_to_time(float_hour):
+                hour = int(float_hour)
+                minute = int((float_hour % 1) * 60)
+                return time(hour, minute)
+
+            shift_start = float_to_time(shift.start_time)
+            shift_end   = float_to_time(shift.end_time)
+
+            planned_start = user_tz.localize(datetime.combine(d, shift_start))
+            planned_end   = user_tz.localize(datetime.combine(d, shift_end))
+
+            # OT trước ca
+            ot_before = (planned_start - local_in).total_seconds() / 3600 if local_in < planned_start else 0.0
+            # OT sau ca
+            ot_after = (local_out - planned_end).total_seconds() / 3600 if local_out > planned_end else 0.0
+
+            rec.ot_done = max(0.0, ot_before) + max(0.0, ot_after)
+
+
+    @api.depends('check_in', 'check_out')
     def _compute_worked_hours_float(self):
         for rec in self:
-            rec.worked_hours_float = rec.worked_hours
+            if rec.check_in and rec.check_out:
+                delta = rec.check_out - rec.check_in
+                rec.worked_hours_float = delta.total_seconds() / 3600.0
+            else:
+                rec.worked_hours_float = 0.0
+
+
 
     @api.constrains('check_in', 'employee_id')
     def _check_one_attendance_per_day_and_contract(self):
-        """Ngăn chặn chấm công nhiều lần trong ngày (theo TZ user) + hợp đồng phải đang 'open'."""
         for rec in self:
             if not rec.check_in or not rec.employee_id:
                 continue
 
-            # Hợp đồng phải 'open'
+            # 1. Kiểm tra hợp đồng đang chạy
             contract = rec.contract_id or rec.employee_id.current_forher_contract_id
             if not contract or contract.state != 'open':
                 raise ValidationError(
                     _('Nhân viên %s không có hợp đồng đang chạy. Không thể chấm công.') % rec.employee_id.name
                 )
 
-            # Mốc ngày theo TZ user -> đổi về UTC để đưa vào domain
+            # 2. Kiểm tra phân ca trong ngày
             user_tz = pytz.timezone(self.env.user.tz or 'UTC')
-            dt = rec.check_in
-            if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=pytz.UTC)
+            dt = rec.check_in if rec.check_in.tzinfo else rec.check_in.replace(tzinfo=pytz.UTC)
             local_dt = dt.astimezone(user_tz)
             d = local_dt.date()
+
+            assignments = self.env['forher.shift.assignment'].search([
+                ('employee_ids', 'in', rec.employee_id.id),
+                ('date', '=', d),
+            ])
+            if not assignments:
+                raise ValidationError(
+                    _('Nhân viên %s chưa được phân ca trong ngày %s. Không thể chấm công.') %
+                    (rec.employee_id.name, d.strftime('%d/%m/%Y'))
+                )
+
+            # 👉 2.1: Ràng buộc giờ check_in theo ca
+            def float_to_time(float_hour):
+                hour = int(float_hour)
+                minute = int(round((float_hour % 1) * 60))
+                return time(hour, minute)
+
+            valid_shift = False
+            for assign in assignments:
+                shift = assign.shift_id
+                if not shift:
+                    continue
+
+                shift_start = float_to_time(shift.start_time)
+                shift_end   = float_to_time(shift.end_time)
+
+                planned_start = user_tz.localize(datetime.combine(d, shift_start))
+                planned_end   = user_tz.localize(datetime.combine(d, shift_end))
+
+                # Cho phép từ 30p trước giờ ca → hết ca
+                allowed_start = planned_start - timedelta(minutes=30)
+                allowed_end   = planned_end
+
+                if allowed_start <= local_dt <= allowed_end:
+                    valid_shift = True
+                    break
+
+            if not valid_shift:
+                raise ValidationError(
+                    _('Chưa tới giờ chấm công.') %
+                    (local_dt.strftime('%H:%M'), rec.employee_id.name, d.strftime('%d/%m/%Y'))
+                )
+
+            # 3. Chặn chấm công nhiều lần trong ngày
             local_start = datetime.combine(d, time.min).replace(tzinfo=user_tz)
             local_end   = datetime.combine(d, time.max).replace(tzinfo=user_tz)
             day_start_utc = local_start.astimezone(pytz.UTC)
@@ -107,37 +227,48 @@ class HrAttendance(models.Model):
             rec.is_late = False
             rec.is_early = False
 
-            contract = rec.contract_id or rec.employee_id.contract_id
-            if not contract or not rec.check_in:
+            if not rec.check_in or not rec.employee_id:
                 continue
 
-            calendar = contract.resource_calendar_id or rec.employee_id.resource_calendar_id
-            start_time = time(8, 0, 0)
-            end_time = time(17, 0, 0)
+            # Lấy ngày local từ check_in
+            user_tz = pytz.timezone(self.env.user.tz or "UTC")
+            dt = rec.check_in if rec.check_in.tzinfo else rec.check_in.replace(tzinfo=pytz.UTC)
+            local_dt = dt.astimezone(user_tz)
+            d = local_dt.date()
 
-            if calendar:
-                weekday = rec.check_in.weekday()
-                attendances = calendar.attendance_ids.filtered(
-                    lambda a: int(a.dayofweek) == weekday and (a.name != 'Break')
-                )
-                if attendances:
-                    min_hour = min(attendances.mapped('hour_from'))
-                    start_hour = int(min_hour)
-                    start_minute = int((min_hour - start_hour) * 60)
-                    start_time = time(start_hour, start_minute)
+            # Tìm ca làm việc trong ngày
+            assignments = self.env['forher.shift.assignment'].search([
+                ('employee_ids', 'in', rec.employee_id.id),
+                ('date', '=', d),
+            ], limit=1)
 
-                    max_hour = max(attendances.mapped('hour_to'))
-                    end_hour = int(max_hour)
-                    end_minute = int((max_hour - end_hour) * 60)
-                    end_time = time(end_hour, end_minute)
+            if not assignments:
+                continue
 
-            if rec.check_in.time() > start_time:
+            shift = assignments.shift_id
+            if not shift:
+                continue
+
+            # Chuyển float -> time
+            def float_to_time(float_hour):
+                hour = int(float_hour)
+                minute = int((float_hour % 1) * 60)
+                return time(hour, minute)
+
+            shift_start = float_to_time(shift.start_time)
+            shift_end   = float_to_time(shift.end_time)
+
+            planned_start = user_tz.localize(datetime.combine(d, shift_start))
+            planned_end   = user_tz.localize(datetime.combine(d, shift_end))
+
+            # Check đi trễ
+            if rec.check_in.astimezone(user_tz) > planned_start:
                 rec.is_late = True
-                rec.attendance_type_id = self.env.ref("forher_attendance.type_ot")
 
-            if rec.check_out and rec.check_out.time() < end_time:
+            # Check về sớm
+            if rec.check_out and rec.check_out.astimezone(user_tz) < planned_end:
                 rec.is_early = True
-                rec.attendance_type_id = self.env.ref("forher_attendance.type_ot")
+
 
 
     # === ForHer integration fields === tổng quan chấm công
@@ -231,14 +362,6 @@ class HrAttendance(models.Model):
             else:
                 record.date = False
 
-    @api.depends('attendance_type_id', 'quantity')
-    def _compute_total_amount(self):
-        for rec in self:
-            if rec.attendance_type_id:
-                rec.total_amount = (rec.quantity or 0.0) * (rec.attendance_type_id.amount or 0.0)
-            else:
-                rec.total_amount = 0.0
-
     # === VALIDATION & CONSTRAINTS ===
     @api.constrains('check_in', 'check_out', 'employee_id')
     def _check_validity(self):
@@ -297,155 +420,95 @@ class HrAttendance(models.Model):
         self, employee_id, check_type="check_in", note=None, location=None,
         attendance_type_id=None, quantity=1.0
     ):
-        """
-        API để tạo bản ghi chấm công (dùng cho mobile/web)
-        - Chỉ cho phép 1 lần chấm công/ngày
-        - Chỉ cho phép hợp đồng Running (state='open')
-        - Hỗ trợ phân biệt fulltime / parttime
-        """
-
-        # ================== 1. Lấy nhân viên ==================
         employee = self.env["hr.employee"].browse(employee_id)
         if not employee.exists():
             raise UserError(_("Nhân viên không tồn tại."))
-
         if not employee.company_id:
             raise UserError(_("Nhân viên %s chưa được gán chi nhánh.") % employee.name)
 
-        # ================== 2. Phân quyền ==================
         user = self.env.user
         if not (user.has_group("forher_company_overview.forher_group_branch_manager") or
                 user.has_group("forher_company_overview.forher_group_accountant")):
             raise UserError(_("Bạn không có quyền ghi nhận chấm công."))
 
-        # ================== 3. Kiểm tra hợp đồng ==================
+        # === 1. Kiểm tra hợp đồng đang chạy ===
         contract = employee.current_forher_contract_id
         if not contract or contract.state != "open":
             raise UserError(_("Nhân viên %s không có hợp đồng đang chạy.") % employee.name)
 
-        # ================== 4. Xác định ngày hiện tại ==================
+        # === 2. Xác định ngày local (theo timezone user) ===
         user_tz = pytz.timezone(user.tz or "UTC")
         now_utc = datetime.now(pytz.UTC)
-        today_local = now_utc.astimezone(user_tz).date()
+        now_local = now_utc.astimezone(user_tz)
+        today_local = now_local.date()
 
+        # === 3. Kiểm tra phân ca (bắt buộc) ===
+        assignments = self.env['forher.shift.assignment'].search([
+            ('employee_ids', 'in', employee.id),
+            ('date', '=', today_local),
+        ])
+        if not assignments:
+            raise UserError(_("Nhân viên %s không có ca làm trong ngày %s. Không thể chấm công.") %
+                            (employee.name, today_local.strftime("%d/%m/%Y")))
+
+        assignment = assignments[0]
+        shift = assignment.shift_id
+        if not shift:
+            raise UserError(_("Phân ca không có thông tin ca làm việc."))
+
+        # build datetime từ shift.start_time / end_time
+        start_hour = int(shift.start_time)
+        start_minute = int((shift.start_time % 1) * 60)
+        end_hour = int(shift.end_time)
+        end_minute = int((shift.end_time % 1) * 60)
+
+        planned_start = user_tz.localize(datetime.combine(today_local, time(start_hour, start_minute)))
+        planned_end = user_tz.localize(datetime.combine(today_local, time(end_hour, end_minute)))
+
+        # === 4. Check đã chấm công trong ngày chưa ===
         local_start = datetime.combine(today_local, time.min).replace(tzinfo=user_tz)
         local_end = datetime.combine(today_local, time.max).replace(tzinfo=user_tz)
         day_start_utc = local_start.astimezone(pytz.UTC)
         day_end_utc = local_end.astimezone(pytz.UTC)
 
-        # ================== 5. Chặn chấm công trùng trong ngày ==================
-        if check_type == "check_in":
-            existing_today = self.search([
-                ("employee_id", "=", employee_id),
-                ("check_in", ">=", fields.Datetime.to_string(day_start_utc)),
-                ("check_in", "<=", fields.Datetime.to_string(day_end_utc)),
-            ], limit=1)
-            if existing_today:
-                raise UserError(_("Nhân viên %s đã chấm công hôm nay.") % employee.name)
-
-        # ================== 6. Chuẩn bị dữ liệu ==================
+        now = datetime.now(pytz.UTC)
         vals = {
             "employee_id": employee_id,
             "attendance_type_id": attendance_type_id,
             "recorded_by": user.id,
-            "check_in_note": note if check_type == "check_in" else None,
-            "check_out_note": note if check_type == "check_out" else None,
-            "check_in_location": location if check_type == "check_in" else None,
-            "check_out_location": location if check_type == "check_out" else None,
         }
 
-        # ================== 7. Logic Fulltime ==================
-        if contract.contract_type_id and contract.contract_type_id.code == "fulltime":
-            calendar = contract.calendar_id
-            if not calendar:
-                raise UserError(_("Hợp đồng %s chưa được gán lịch làm việc.") % contract.name)
+        if check_type == "check_in":
+            assignment = assignments[0]
+            shift = assignment.shift_id
+            if not shift:
+                raise UserError(_("Nhân viên %s chưa có ca làm.") % employee.name)
 
-            weekday = today_local.weekday()
-            attendances = calendar.attendance_ids.filtered(lambda a: int(a.dayofweek) == weekday)
-            if not attendances:
-                raise UserError(_("Không tìm thấy ca làm việc cho %s trong ngày %s") %
-                                (employee.name, today_local.strftime("%d/%m/%Y")))
+            shift_date = assignment.date
+            user_tz = pytz.timezone(user.tz or "UTC")
 
-            att = attendances[0]  # TODO: mở rộng nhiều ca
-            start_hour = int(att.hour_from)
-            start_minute = int((att.hour_from - start_hour) * 60)
-            end_hour = int(att.hour_to)
-            end_minute = int((att.hour_to - end_hour) * 60)
+            # Convert float → time
+            shift_start = self.float_to_time(shift.start_time)
+            shift_end = self.float_to_time(shift.end_time)
 
-            planned_start = datetime.combine(today_local, time(start_hour, start_minute)).replace(tzinfo=user_tz).astimezone(pytz.UTC)
-            planned_end = datetime.combine(today_local, time(end_hour, end_minute)).replace(tzinfo=user_tz).astimezone(pytz.UTC)
+            # Ghép ngày + giờ
+            planned_start = user_tz.localize(datetime.combine(shift_date, shift_start))
+            planned_end = user_tz.localize(datetime.combine(shift_date, shift_end))
 
-            if check_type == "check_in":
-                now = fields.Datetime.now()
-                vals["check_in"] = now
-                vals["quantity"] = 0.0
-                vals["is_late"] = now > planned_start
-                return self.create(vals)
+            # Giờ hiện tại (máy user)
+            now = datetime.now(user_tz)
 
-            else:  # check_out
-                attendance = self.search([
-                    ("employee_id", "=", employee_id),
-                    ("check_out", "=", False)
-                ], limit=1, order="check_in desc")
+            # Chỉ cho phép check-in từ 30p trước giờ ca đến giờ kết thúc ca
+            allowed_start = planned_start - timedelta(minutes=30)
+            allowed_end = planned_end
 
-                if not attendance:
-                    raise UserError(_("Không tìm thấy bản ghi check-in để kết thúc."))
+            if not (allowed_start <= now <= allowed_end):
+                raise UserError(_("Bạn chỉ có thể chấm công từ %s đến %s cho ca %s.") % (
+                    allowed_start.strftime("%H:%M"),
+                    allowed_end.strftime("%H:%M"),
+                    shift.name
+                ))
 
-                now = fields.Datetime.now()
-                delta_hours = (now - attendance.check_in).total_seconds() / 3600.0
-
-                vals_update = {
-                    "check_out": now,
-                    "check_out_note": note,
-                    "check_out_location": location,
-                    "quantity": round(delta_hours, 2),
-                }
-
-                if now < planned_end:
-                    vals_update["is_early"] = True
-
-                attendance.write(vals_update)
-                attendance.invalidate_cache()
-                return attendance
-
-        # ================== 8. Logic Parttime ==================
-        elif contract.contract_type_id and contract.contract_type_id.code == "parttime":
-            if check_type == "check_in":
-                vals["check_in"] = fields.Datetime.now()
-                vals["quantity"] = 0.0
-                return self.create(vals)
-            else:
-                attendance = self.search([
-                    ("employee_id", "=", employee_id),
-                    ("check_out", "=", False)
-                ], limit=1, order="check_in desc")
-
-                if not attendance:
-                    raise UserError(_("Không tìm thấy bản ghi check-in để kết thúc."))
-
-                now = fields.Datetime.now()
-                vals_update = {
-                    "check_out": now,
-                    "check_out_note": note,
-                    "check_out_location": location,
-                    # parttime: tính công cố định (vd: quantity từ tham số)
-                    "quantity": quantity or attendance.quantity,
-                }
-                attendance.write(vals_update)
-                attendance.invalidate_cache()
-                return attendance
-
-        # ================== 9. Loại hợp đồng khác ==================
-        else:
-            raise UserError(_("Hợp đồng %s không xác định loại fulltime/parttime.") % contract.name)
-
-
-    # def _get_client_ip(self):  # Đã bỏ không sử dụng IP
-    #     if request:
-    #         return request.httprequest.environ.get('REMOTE_ADDR', '') or ''
-    #     return ''
-
-    # Helper: tổng hợp công cho 1 tháng (có thể gọi qua cron)
     @api.model
     def cron_aggregate_attendance_monthly(self, year=None, month=None):
         """Tổng hợp công — gợi ý: gọi cron vào 1-3 tháng sau"""
@@ -532,3 +595,175 @@ class HrEmployee(models.Model):
         action['domain'] = [('employee_id', '=', self.id)]
         action['context'] = {'default_employee_id': self.id}
         return action
+
+# -*- coding: utf-8 -*-
+from odoo import models, fields, api, _
+from odoo.exceptions import ValidationError
+from datetime import time, timedelta
+
+# =====================
+# CA LÀM VIỆC
+# =====================
+class ForHerShift(models.Model):
+    _name = "forher.shift"
+    _description = "Ca làm việc ForHer"
+    _order = "start_time"
+
+    name = fields.Char("Tên ca", required=True)
+    code = fields.Char("Mã ca", required=True)
+    start_time = fields.Float("Giờ bắt đầu", required=True)  # 8.5 = 8:30
+    end_time = fields.Float("Giờ kết thúc", required=True)   # 16 = 16h
+    duration = fields.Float("Thời lượng (giờ)", compute="_compute_duration", store=True)
+    active = fields.Boolean(default=True)
+    color = fields.Integer("Màu", default=2)
+    note = fields.Text("Ghi chú")   
+    company_id = fields.Many2one(
+    "res.company", string="Chi nhánh", required=True, default=lambda self: self.env.company
+)
+
+
+    @api.depends("start_time", "end_time")
+    def _compute_duration(self):
+        for rec in self:
+            rec.duration = rec.end_time - rec.start_time if rec.end_time > rec.start_time else 0.0
+
+
+# =====================
+# PHÂN CA
+# =====================
+class ForHerShiftAssignment(models.Model):
+    _name = "forher.shift.assignment"
+    _description = "Phân ca cho nhân viên"
+    _order = "date, shift_id"
+
+    employee_ids = fields.Many2many(
+        "hr.employee", string="Nhân viên", required=True)
+    shift_id = fields.Many2one("forher.shift", string="Ca làm việc", required=True)
+    date = fields.Date("Ngày làm việc", required=True, index=True)
+    company_id = fields.Many2one(
+        "res.company", string="Chi nhánh", related="shift_id.company_id", store=True)
+    color = fields.Integer(related="shift_id.color", store=True)
+
+    date_start = fields.Datetime("Bắt đầu ca", compute="_compute_date_start_stop", store=True)
+    date_stop = fields.Datetime("Kết thúc ca", compute="_compute_date_start_stop", store=True)
+
+    from datetime import time
+
+    name = fields.Char("Tên hiển thị", compute='_compute_name', store=True)
+
+    @api.depends('shift_id', 'date')
+    def _compute_name(self):
+        for rec in self:
+            if rec.shift_id:
+                # Lấy giờ bắt đầu và kết thúc
+                start_hour = int(rec.shift_id.start_time)
+                start_minute = int((rec.shift_id.start_time - start_hour) * 60)
+                end_hour = int(rec.shift_id.end_time)
+                end_minute = int((rec.shift_id.end_time - end_hour) * 60)
+                start_str = f"{start_hour:02d}:{start_minute:02d}"
+                end_str = f"{end_hour:02d}:{end_minute:02d}"
+
+                # Hiển thị tên ca + giờ + ngày
+                rec.name = f"{rec.shift_id.name} ({start_str}-{end_str}) ({rec.date})"
+            else:
+                rec.name = ""
+
+
+    @api.depends('date', 'shift_id')
+    def _compute_date_start_stop(self):
+        for rec in self:
+            if rec.date and rec.shift_id:
+                start_hour = int(rec.shift_id.start_time)
+                start_minute = int((rec.shift_id.start_time - start_hour) * 60)
+                end_hour = int(rec.shift_id.end_time)
+                end_minute = int((rec.shift_id.end_time - end_hour) * 60)
+                rec.date_start = datetime.combine(rec.date, time(start_hour, start_minute))
+                rec.date_stop = datetime.combine(rec.date, time(end_hour, end_minute))
+            else:
+                rec.date_start = rec.date_stop = False
+
+    # Loại bỏ SQL constraint vì Many2many sẽ tạo nhiều bản ghi riêng biệt khi lưu
+    def name_get(self):
+        result = []
+        for rec in self:
+            names = ", ".join(emp.name for emp in rec.employee_ids)
+            result.append((rec.id, f"{names} - {rec.shift_id.name} ({rec.date})"))
+        return result
+
+
+# =====================
+# QUY ĐỊNH & VI PHẠM
+# =====================
+class ForHerViolationRule(models.Model):
+    _name = "forher.violation.rule"
+    _description = "Quy định vi phạm"
+
+    code = fields.Char("Mã", required=True)
+    name = fields.Char("Tên vi phạm", required=True)
+    penalty_type = fields.Selection([
+        ("warning", "Cảnh cáo"),
+        ("salary_deduction", "Trừ lương"),
+        ("rank_deduction", "Trừ xếp loại tháng"),
+    ], string="Hình thức xử lý", required=True)
+    amount = fields.Float("Mức phạt (VNĐ)", default=0.0)
+
+
+class ForHerViolationRecord(models.Model):
+    _name = "forher.violation.record"
+    _description = "Ghi nhận vi phạm"
+
+    employee_id = fields.Many2one("hr.employee", string="Nhân viên", required=True)
+    attendance_id = fields.Many2one("hr.attendance", string="Bản ghi công")
+    violation_rule_id = fields.Many2one("forher.violation.rule", string="Vi phạm", required=True)
+    date = fields.Date("Ngày", default=fields.Date.today)
+    note = fields.Text("Ghi chú")
+    state = fields.Selection([
+        ("draft", "Nháp"),
+        ("confirmed", "Đã xác nhận"),
+        ("deducted", "Đã xử lý")
+    ], default="draft", string="Trạng thái")
+
+
+# =====================
+# CRON CHECK VI PHẠM
+# =====================
+class HrAttendanceInherit(models.Model):
+    _inherit = "hr.attendance"
+
+    is_late = fields.Boolean("Đi trễ")
+    is_early = fields.Boolean("Về sớm")
+
+    def action_check_violation(self):
+        """Check vi phạm đi trễ theo tháng"""
+        rules = {
+            1: self.env.ref("forher_attendance.rule_warning", raise_if_not_found=False),
+            2: self.env.ref("forher_attendance.rule_salary", raise_if_not_found=False),
+            3: self.env.ref("forher_attendance.rule_rank", raise_if_not_found=False),
+        }
+        # group by employee + tháng
+        employees = self.env["hr.employee"].search([])
+        for emp in employees:
+            attendances = self.search([("employee_id", "=", emp.id), ("is_late", "=", True)])
+            late_count = len(attendances)
+            if late_count >= 1:
+                if late_count == 1 and rules[1]:
+                    self.env["forher.violation.record"].create({
+                        "employee_id": emp.id,
+                        "attendance_id": attendances[0].id,
+                        "violation_rule_id": rules[1].id,
+                        "note": "Đi trễ lần 1 trong tháng"
+                    })
+                elif late_count == 2 and rules[2]:
+                    self.env["forher.violation.record"].create({
+                        "employee_id": emp.id,
+                        "attendance_id": attendances[-1].id,
+                        "violation_rule_id": rules[2].id,
+                        "note": "Đi trễ lần 2 trong tháng"
+                    })
+                elif late_count >= 3 and rules[3]:
+                    self.env["forher.violation.record"].create({
+                        "employee_id": emp.id,
+                        "attendance_id": attendances[-1].id,
+                        "violation_rule_id": rules[3].id,
+                        "note": f"Đi trễ lần {late_count} trong tháng"
+                    })

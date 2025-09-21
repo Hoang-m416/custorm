@@ -35,6 +35,7 @@
         'views/kiosk_assets.xml',      # <-- ĐỂ TRƯỚC
         'views/kiosk_templates.xml',   # <-- ĐỂ SAU
         'views/hr_attendance_manager_views.xml',
+        'views/forher_shift_views.xml',
         'views/menu.xml',
     ],
     'installable': True,

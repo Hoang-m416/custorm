@@ -1,25 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
     <!-- Calendar View cho lịch chấm công nhân viên -->
-    <record id="view_attendance_calendar_manager" model="ir.ui.view">
-        <field name="name">attendance.calendar.manager</field>
-        <field name="model">hr.attendance</field>
+    <record id="view_forher_shift_assignment_calendar" model="ir.ui.view">
+        <field name="name">forher.shift.assignment.calendar</field>
+        <field name="model">forher.shift.assignment</field>
         <field name="arch" type="xml">
-            <calendar string="Lịch chấm công nhân viên" 
-                     date_start="check_in"
-                     color="employee_id"
-                     mode="month">
-                <field name="employee_id"/>
-                <field name="check_in"/>
-                <field name="check_out"/>
-                <field name="worked_hours"/>
-                <field name="attendance_type_id"/>
-                <field name="state"/>
-                <field name="is_late"/>
-                <field name="is_early"/>
+            <calendar string="Phân ca"
+                      date_start="date_start"
+                      date_stop="date_stop"
+                      color="shift_id">
+                <field name="shift_id"/>
+                <field name="employee_ids"/>
             </calendar>
         </field>
     </record>
+
 
     <!-- Kanban View tổng quan nhân viên -->
     <record id="view_employee_kanban_manager" model="ir.ui.view">
