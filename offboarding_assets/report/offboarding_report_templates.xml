@@ -3,8 +3,15 @@
     <template id="report_offboarding_assets_document">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="doc">
-                <div class="page">
-
+                <div class="page">  
+                    <!-- Nút quay lại -->
+                    <div style="text-align:left; margin-bottom:20px;">
+                        <a t-attf-href="/web#id={{doc.id}}&amp;model=forher.offboarding.assets&amp;view_type=form"
+                        class="btn btn-secondary"
+                        target="_top">
+                            ← Quay lại 
+                        </a>
+                    </div>
                     <!-- Header -->
                     <div class="row" style="margin-bottom:20px;">
                         <div class="col-6" style="float:left; width:60%;">

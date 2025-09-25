@@ -146,7 +146,19 @@
                     <field name="interview_date"/>
                     <field name="location"/>
                     <field name="progress"/>
-                    <field name="applicant_state" readonly="1"/>
+                    <field name="applicant_state" widget="badge" readonly="1"
+                        options="{
+                            'secondary':'interview_scheduled',
+                            'info':'interviewing',
+                            'success':'interview_passed',
+                            'danger':'rejected',
+                            'primary':'offer',
+                            'warning':'pending_confirmation',
+                            'teal':'direct_hire',
+                            'primary':'hire_confirmed',
+                            'success':'hired',
+                            'darkblue':'waiting'
+                        }"/>
                 </list>
             </field>
         </record>

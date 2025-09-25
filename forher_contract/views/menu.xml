@@ -3,8 +3,8 @@
     <data>
         <!-- Main Menu -->
         <menuitem id="forher_contract_main_menu"
-                  name="ForHer Contract"
-                  sequence="10"
+                  name="Hợp Đồng"
+                  sequence="4"
                   groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board,base.group_system"/>
 
 

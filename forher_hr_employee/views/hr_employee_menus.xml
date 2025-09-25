@@ -19,8 +19,8 @@
 
         <!-- ================= Menu gốc ================= -->
         <record id="hr.menu_hr_root" model="ir.ui.menu">
-            <field name="name">Nhân sự Forher</field>
-            <field name="sequence">11</field>
+            <field name="name">Nhân Sự </field>
+            <field name="sequence">3</field>
         </record>
 
         <!-- Menu Company -->

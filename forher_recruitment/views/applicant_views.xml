@@ -198,7 +198,20 @@
                     <field name="email"/>
                     <field name="phone"/>
                     <field name="position_applied"/>
-                    <field name="state"/>
+                    <field name="state" widget="badge" readonly="1"
+                        options="{
+                            'secondary':'new',
+                            'info':'screened',
+                            'primary':'interview_scheduled',
+                            'teal':'interviewing',
+                            'success':'interview_passed',
+                            'warning':'pending_confirmation',
+                            'primary':'hire_confirmed',
+                            'darkblue':'offer',
+                            'success':'hired',
+                            'warning':'waiting',
+                            'danger':'rejected'
+                        }"/>
                 </list>
             </field>
         </record>

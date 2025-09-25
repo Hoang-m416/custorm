@@ -1,0 +1,31 @@
+<odoo>
+    <!-- Tết Dương lịch -->
+    <record id="holiday_new_year" model="forher.holiday.calendar">
+        <field name="name">Tết Dương lịch</field>
+        <field name="date">2025-01-01</field>
+    </record>
+
+    <!-- Giỗ Tổ Hùng Vương -->
+    <record id="holiday_hung_king" model="forher.holiday.calendar">
+        <field name="name">Giỗ Tổ Hùng Vương</field>
+        <field name="date">2025-04-18</field>
+    </record>
+
+    <!-- Giải phóng miền Nam -->
+    <record id="holiday_reunification" model="forher.holiday.calendar">
+        <field name="name">Ngày Giải phóng miền Nam</field>
+        <field name="date">2025-04-30</field>
+    </record>
+
+    <!-- Quốc tế Lao động -->
+    <record id="holiday_labour" model="forher.holiday.calendar">
+        <field name="name">Quốc tế Lao động</field>
+        <field name="date">2025-05-01</field>
+    </record>
+
+    <!-- Quốc khánh -->
+    <record id="holiday_independence" model="forher.holiday.calendar">
+        <field name="name">Quốc khánh</field>
+        <field name="date">2025-09-02</field>
+    </record>
+</odoo>

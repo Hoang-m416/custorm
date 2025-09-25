@@ -1,0 +1,187 @@
+<odoo>
+    <record id="forher_salary_structure_default" model="forher.salary.structure">
+        <field name="name">Cấu trúc lương mặc định</field>
+        <field name="note">Cấu trúc lương mặc định cho Forher.</field>
+    </record>
+
+    <record id="forher_salary_rule_basic" model="forher.salary.rule">
+        <field name="name">Lương cơ bản</field>
+        <field name="code">BASIC</field>
+        <field name="sequence" eval="10"/>
+        <field name="structure_id" ref="forher_salary_structure_default"/>
+        <field name="rule_type">basic</field>
+        <field name="amount_python_compute"><![CDATA[
+# Lương cơ bản dựa trên ngày công và nghỉ phép hợp lệ
+worked_days = worked_data.get('total_days', 0.0) or 0.0
+leave_days = worked_data.get('leave_days', 0.0) or 0.0
+
+if contract and contract.wage:
+    daily_wage = contract.wage / 26.0
+else:
+    daily_wage = 0.0
+
+actual_worked_days = min(worked_days, 26.0)
+valid_leave_days = min(leave_days, 4.0)
+
+result = (actual_worked_days + valid_leave_days) * daily_wage
+]]></field>
+        <field name="always_include" eval="True"/>
+    </record>
+
+    <record id="forher_salary_rule_position_allowance" model="forher.salary.rule">
+        <field name="name">Phụ cấp chức vụ</field>
+        <field name="code">POSALL</field>
+        <field name="sequence" eval="15"/>
+        <field name="structure_id" ref="forher_salary_structure_default"/>
+        <field name="rule_type">allowance</field>
+        <field name="amount_python_compute"><![CDATA[
+contract_allowance = contract.position_allowance if contract and contract.position_allowance else 0.0
+employee_allowance = employee.position_allowance if employee and employee.position_allowance else 0.0
+result = contract_allowance if contract_allowance else employee_allowance
+]]></field>
+    </record>
+
+    <record id="forher_salary_rule_job_allowance" model="forher.salary.rule">
+        <field name="name">Phụ cấp công việc</field>
+        <field name="code">JOBALL</field>
+        <field name="sequence" eval="16"/>
+        <field name="structure_id" ref="forher_salary_structure_default"/>
+        <field name="rule_type">allowance</field>
+        <field name="amount_python_compute"><![CDATA[
+contract_allowance = contract.job_allowance if contract and contract.job_allowance else 0.0
+employee_allowance = employee.job_allowance if employee and employee.job_allowance else 0.0
+result = contract_allowance if contract_allowance else employee_allowance
+]]></field>
+    </record>
+
+    <record id="forher_salary_rule_overtime" model="forher.salary.rule">
+        <field name="name">Lương thêm giờ</field>
+        <field name="code">OT</field>
+        <field name="sequence" eval="20"/>
+        <field name="structure_id" ref="forher_salary_structure_default"/>
+        <field name="rule_type">allowance</field>
+        <field name="amount_python_compute"><![CDATA[
+ot_normal_hours = inputs.get('ot_normal_hours', 0.0) or 0.0
+ot_holiday_hours = inputs.get('ot_holiday_hours', 0.0) or 0.0
+rate = 27000.0
+result = (ot_normal_hours * rate) + (ot_holiday_hours * rate * 3.0)
+]]></field>
+    </record>
+
+    <record id="forher_salary_rule_hot_bonus" model="forher.salary.rule">
+        <field name="name">Thưởng nóng</field>
+        <field name="code">HOTBON</field>
+        <field name="sequence" eval="25"/>
+        <field name="structure_id" ref="forher_salary_structure_default"/>
+        <field name="rule_type">allowance</field>
+        <field name="amount_python_compute"><![CDATA[
+sales_total = inputs.get('sales_total', 0.0) or 0.0
+if sales_total >= 10000000:
+    result = 200000.0
+elif sales_total >= 7500000:
+    result = 150000.0
+else:
+    result = 0.0
+]]></field>
+    </record>
+
+    <record id="forher_salary_rule_livestream_bonus" model="forher.salary.rule">
+        <field name="name">Thưởng livestream</field>
+        <field name="code">LIVEBON</field>
+        <field name="sequence" eval="26"/>
+        <field name="structure_id" ref="forher_salary_structure_default"/>
+        <field name="rule_type">allowance</field>
+        <field name="amount_python_compute"><![CDATA[
+products_sold = inputs.get('products_sold', 0) or 0
+result = 200000.0 if products_sold > 50 else 0.0
+]]></field>
+    </record>
+
+    <record id="forher_salary_rule_abc_bonus" model="forher.salary.rule">
+        <field name="name">Thưởng đánh giá ABC</field>
+        <field name="code">ABCBON</field>
+        <field name="sequence" eval="27"/>
+        <field name="structure_id" ref="forher_salary_structure_default"/>
+        <field name="rule_type">allowance</field>
+        <field name="amount_python_compute"><![CDATA[
+rating = (inputs.get('abc_rating') or '').upper()
+if rating == 'A':
+    result = 500000.0
+elif rating == 'B':
+    result = 200000.0
+else:
+    result = 0.0
+]]></field>
+    </record>
+
+    <record id="forher_salary_rule_social_insurance" model="forher.salary.rule">
+        <field name="name">Bảo hiểm xã hội</field>
+        <field name="code">SOCINS</field>
+        <field name="sequence" eval="100"/>
+        <field name="structure_id" ref="forher_salary_structure_default"/>
+        <field name="rule_type">deduction</field>
+        <field name="amount_python_compute"><![CDATA[
+basic_salary = rules.get('BASIC', 0.0) or 0.0
+result = abs(basic_salary) * 0.105
+]]></field>
+        <field name="always_include" eval="True"/>
+    </record>
+
+    <record id="forher_salary_rule_personal_income_tax" model="forher.salary.rule">
+        <field name="name">Thuế thu nhập cá nhân</field>
+        <field name="code">PIT</field>
+        <field name="sequence" eval="110"/>
+        <field name="structure_id" ref="forher_salary_structure_default"/>
+        <field name="rule_type">deduction</field>
+        <field name="amount_python_compute"><![CDATA[
+gross_income = categories.get('basic', 0.0) + categories.get('allowance', 0.0)
+si = abs(rules.get('SOCINS', 0.0))
+personal_deduction = 11000000.0
+dependent_deduction = (employee.dependent_count if employee else 0) * 4400000.0
+
+taxable_income = gross_income - si - personal_deduction - dependent_deduction
+if taxable_income <= 0:
+    result = 0.0
+elif taxable_income <= 5000000:
+    result = taxable_income * 0.05
+elif taxable_income <= 10000000:
+    result = 5000000 * 0.05 + (taxable_income - 5000000) * 0.10
+elif taxable_income <= 18000000:
+    result = 5000000 * 0.05 + 5000000 * 0.10 + (taxable_income - 10000000) * 0.15
+elif taxable_income <= 32000000:
+    result = 5000000 * 0.05 + 5000000 * 0.10 + 8000000 * 0.15 + (taxable_income - 18000000) * 0.20
+elif taxable_income <= 52000000:
+    result = (5000000 * 0.05 + 5000000 * 0.10 + 8000000 * 0.15 +
+              14000000 * 0.20 + (taxable_income - 32000000) * 0.25)
+elif taxable_income <= 80000000:
+    result = (5000000 * 0.05 + 5000000 * 0.10 + 8000000 * 0.15 +
+              14000000 * 0.20 + 20000000 * 0.25 + (taxable_income - 52000000) * 0.30)
+else:
+    result = (5000000 * 0.05 + 5000000 * 0.10 + 8000000 * 0.15 +
+              14000000 * 0.20 + 20000000 * 0.25 + 28000000 * 0.30 +
+              (taxable_income - 80000000) * 0.35)
+]]></field>
+    </record>
+
+    <record id="forher_salary_rule_advance" model="forher.salary.rule">
+        <field name="name">Tạm ứng</field>
+        <field name="code">ADVANCE</field>
+        <field name="sequence" eval="120"/>
+        <field name="structure_id" ref="forher_salary_structure_default"/>
+        <field name="rule_type">deduction</field>
+        <field name="amount_python_compute"><![CDATA[
+result = inputs.get('advance_amount', 0.0) or 0.0
+]]></field>
+    </record>
+
+    <record id="forher_salary_rule_penalty" model="forher.salary.rule">
+        <field name="name">Tiền phạt</field>
+        <field name="code">PENALTY</field>
+        <field name="sequence" eval="130"/>
+        <field name="structure_id" ref="forher_salary_structure_default"/>
+        <field name="rule_type">deduction</field>
+        <field name="amount_python_compute"><![CDATA[
+result = inputs.get('penalty_amount', 0.0) or 0.0
+]]></field>
+    </record>
+</odoo>

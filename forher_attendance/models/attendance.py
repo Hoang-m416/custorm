@@ -28,6 +28,27 @@ class ForHerAttendanceType(models.Model):
     active = fields.Boolean('Active', default=True)
     sequence = fields.Integer('Thứ tự', default=10)
 
+    state = fields.Selection([
+    ('draft', 'Nháp'),
+    ('to_confirm', 'Chờ xác nhận'),
+    ('confirmed', 'Đã xác nhận'),
+    ('validated', 'Đã duyệt'),
+    ('rejected', 'Từ chối'),
+], string="Trạng thái", default="draft", tracking=True)
+
+
+    def action_send_to_confirm(self):
+        self.write({'state': 'to_confirm'})
+
+    def action_confirm(self):
+        self.write({'state': 'confirmed'})
+
+    def action_validate(self):
+        self.write({'state': 'validated'})
+
+    def action_reject(self):
+        self.write({'state': 'rejected'})
+
 from datetime import datetime, time
 
 
@@ -36,6 +57,42 @@ from datetime import datetime, time
 # -------------------------
 class HrAttendance(models.Model):
     _inherit = 'hr.attendance'
+
+    is_holiday = fields.Boolean(string="Ngày lễ", compute="_compute_is_holiday", store=True)
+    is_leave = fields.Boolean(string="Ngày nghỉ phép", compute="_compute_is_leave", store=True)
+
+    state = fields.Selection([
+        ('draft', 'Nháp'),
+        ('to_confirm', 'Chờ xác nhận'),
+        ('confirmed', 'Chờ phê duyệt'),
+        ('validated', 'Đã duyệt'),
+        ('rejected', 'Bị từ chối'),
+    ], string="Trạng thái", default="draft")
+
+    def action_send_to_confirm(self):
+        for rec in self:
+            rec.state = 'to_confirm'
+        return True
+
+    def action_confirm(self):
+        for rec in self:
+            rec.state = 'confirmed'
+        return True
+
+    def action_validate(self):
+        for rec in self:
+            rec.state = 'validated'
+        return True
+
+    def action_reject(self):
+        for rec in self:
+            rec.state = 'rejected'
+        return True
+
+    def action_set_draft(self):
+        for rec in self:
+            rec.state = 'draft'
+        return True
 
     date_start = fields.Datetime(
         string='Bắt đầu',
@@ -75,18 +132,6 @@ class HrAttendance(models.Model):
         help="Số giờ OT còn lại hoặc bù trừ",
         default=0.0
     )
-    
-    @api.depends('check_in', 'check_out', 'attendance_type_id')
-    def _compute_total_amount(self):
-        HOURLY_RATE = 27000
-        for rec in self:
-            if rec.attendance_type_id and rec.worked_hours_float:
-                rec.total_amount = rec.worked_hours_float * HOURLY_RATE
-                rec.quantity = rec.worked_hours_float  # hiển thị số giờ
-            else:
-                rec.total_amount = 0.0
-                rec.quantity = 0.0
-
 
     @api.depends("check_in", "check_out", "employee_id")
     def _compute_ot_hours(self):
@@ -140,7 +185,127 @@ class HrAttendance(models.Model):
             else:
                 rec.worked_hours_float = 0.0
 
+    @api.depends('employee_id', 'check_in', 'check_out')
+    def _compute_is_holiday(self):
+        for rec in self:
+            rec.is_holiday = False
+            date_check = rec.check_in.date() if rec.check_in else False
+            if date_check:
+                holiday_dates = self.env['forher.holiday.calendar'].search([]).mapped('date')
+                if date_check in holiday_dates:
+                    rec.is_holiday = True
 
+    @api.depends('employee_id', 'check_in', 'check_out')
+    def _compute_is_leave(self):
+        for rec in self:
+            rec.is_leave = False
+            if rec.employee_id and rec.check_in:
+                date_check = rec.check_in.date()
+                leave = self.env['forher.leave.request'].search([
+                    ('employee_id', '=', rec.employee_id.id),
+                    ('state', 'in', ['approve', 'confirm']),
+                    ('start_date', '<=', date_check),
+                    ('end_date', '>=', date_check)
+                ], limit=1)
+                if leave:
+                    rec.is_leave = True
+
+    @api.model
+    def create(self, vals):
+        record = super(HrAttendance, self).create(vals)
+        employee = record.employee_id
+        date_check = record.check_in.date() if record.check_in else False
+
+        if employee and date_check:
+            # --- 1. Ngày nghỉ phép ---
+            leave = self.env['forher.leave.request'].search([
+                ('employee_id', '=', employee.id),
+                ('state', 'in', ['approve', 'confirm']),
+                ('start_date', '<=', date_check),
+                ('end_date', '>=', date_check)
+            ], limit=1)
+
+            if leave:
+                record.write({'is_leave': True})
+                raise ValidationError(
+                    _('Ngày %s là ngày nghỉ phép của nhân viên %s. Không thể chấm công.') %
+                    (date_check.strftime('%d/%m/%Y'), employee.name)
+                )
+
+            # --- 2. Ngày lễ ---
+            holiday_dates = self.env['forher.holiday.calendar'].search([]).mapped('date')
+            if date_check in holiday_dates:
+                ot_type = self.env['forher.attendance.type'].search([('code', 'ilike', 'OT')], limit=1)
+                if not ot_type:
+                    ot_type = self.env['forher.attendance.type'].create({
+                        'name': 'Overtime',
+                        'code': 'OT',
+                        'unit': 'hour',
+                        'amount': 0.0
+                    })
+                record.write({
+                    'is_holiday': True,
+                    'attendance_type_id': ot_type.id,
+                    'quantity': record.worked_hours_float or 0.0,
+                    'total_amount': (record.worked_hours_float or 0.0) * 27000
+                })
+                return record
+
+        # --- 3. Logic công chuẩn / OT ---
+        if not record.attendance_type_id:
+            record._compute_late_early()
+
+            # Ưu tiên OT nếu đi trễ / về sớm
+            if record.is_late or record.is_early:
+                ot_type = self.env['forher.attendance.type'].search([('code', 'ilike', 'OT')], limit=1)
+                if not ot_type:
+                    ot_type = self.env['forher.attendance.type'].create({
+                        'name': 'Overtime',
+                        'code': 'OT',
+                        'unit': 'hour',
+                        'amount': 0.0
+                    })
+                record.attendance_type_id = ot_type.id
+            else:
+                # Nếu không trễ/sớm thì gán công chuẩn
+                chuan_type = self.env['forher.attendance.type'].search([('code', '=', 'CHUAN')], limit=1)
+                if not chuan_type:
+                    chuan_type = self.env['forher.attendance.type'].create({
+                        'name': 'Công chuẩn',
+                        'code': 'CHUAN',
+                        'unit': 'day',
+                        'amount': 0.0
+                    })
+                record.attendance_type_id = chuan_type.id
+
+
+
+        # --- 4. Tính tổng tiền ---
+        record._compute_total_amount()
+        return record
+
+    @api.depends('check_in', 'check_out', 'attendance_type_id', 'ot_done')
+    def _compute_total_amount(self):
+        HOURLY_RATE = 27000
+        STANDARD_HOURS = 8  # 1 ngày chuẩn
+        for rec in self:
+            if rec.attendance_type_id:
+                worked_hours = rec.worked_hours_float or 0.0
+
+                if rec.attendance_type_id.code == 'CHUAN':
+                    # Công chuẩn: tối đa 8h
+                    rec.quantity = min(STANDARD_HOURS, worked_hours)
+                    rec.total_amount = rec.quantity * HOURLY_RATE
+                elif rec.attendance_type_id.code == 'OT':
+                    # OT: tính toàn bộ giờ thực tế + OT thêm
+                    rec.quantity = worked_hours + (rec.ot_done or 0.0)
+                    rec.total_amount = rec.quantity * HOURLY_RATE
+                else:
+                    rec.quantity = 0.0
+                    rec.total_amount = 0.0
+            else:
+                rec.quantity = 0.0
+                rec.total_amount = 0.0
 
     @api.constrains('check_in', 'employee_id')
     def _check_one_attendance_per_day_and_contract(self):
@@ -198,10 +363,8 @@ class HrAttendance(models.Model):
                     break
 
             if not valid_shift:
-                raise ValidationError(
-                    _('Chưa tới giờ chấm công.') %
-                    (local_dt.strftime('%H:%M'), rec.employee_id.name, d.strftime('%d/%m/%Y'))
-                )
+                raise ValidationError(('Không có ca làm trong khoảng thời gian này. Không thể chấm công. Vui lòng check lại ca làm'))
+
 
             # 3. Chặn chấm công nhiều lần trong ngày
             local_start = datetime.combine(d, time.min).replace(tzinfo=user_tz)
@@ -226,48 +389,43 @@ class HrAttendance(models.Model):
         for rec in self:
             rec.is_late = False
             rec.is_early = False
-
             if not rec.check_in or not rec.employee_id:
                 continue
 
-            # Lấy ngày local từ check_in
+            # Timezone user
             user_tz = pytz.timezone(self.env.user.tz or "UTC")
             dt = rec.check_in if rec.check_in.tzinfo else rec.check_in.replace(tzinfo=pytz.UTC)
             local_dt = dt.astimezone(user_tz)
             d = local_dt.date()
 
-            # Tìm ca làm việc trong ngày
-            assignments = self.env['forher.shift.assignment'].search([
-                ('employee_ids', 'in', rec.employee_id.id),
-                ('date', '=', d),
-            ], limit=1)
-
-            if not assignments:
-                continue
-
-            shift = assignments.shift_id
-            if not shift:
-                continue
-
-            # Chuyển float -> time
+            # Hàm float -> time
             def float_to_time(float_hour):
                 hour = int(float_hour)
                 minute = int((float_hour % 1) * 60)
                 return time(hour, minute)
 
-            shift_start = float_to_time(shift.start_time)
-            shift_end   = float_to_time(shift.end_time)
+            # Lấy tất cả ca ngày hôm đó của nhân viên
+            assignments = self.env['forher.shift.assignment'].search([
+                ('employee_ids', 'in', rec.employee_id.id),
+                ('date', '=', d),
+            ])
+            for assign in assignments:
+                shift = assign.shift_id
+                if not shift:
+                    continue
 
-            planned_start = user_tz.localize(datetime.combine(d, shift_start))
-            planned_end   = user_tz.localize(datetime.combine(d, shift_end))
+                shift_start = float_to_time(shift.start_time)
+                shift_end = float_to_time(shift.end_time)
+                planned_start = user_tz.localize(datetime.combine(d, shift_start))
+                planned_end = user_tz.localize(datetime.combine(d, shift_end))
 
-            # Check đi trễ
-            if rec.check_in.astimezone(user_tz) > planned_start:
-                rec.is_late = True
-
-            # Check về sớm
-            if rec.check_out and rec.check_out.astimezone(user_tz) < planned_end:
-                rec.is_early = True
+                # Nếu check_in nằm trong khoảng ca này
+                if planned_start - timedelta(minutes=30) <= local_dt <= planned_end + timedelta(minutes=30):
+                    if local_dt > planned_start:
+                        rec.is_late = True
+                    if rec.check_out and rec.check_out.astimezone(user_tz) < planned_end:
+                        rec.is_early = True
+                    break  # xét ca phù hợp đầu tiên rồi dừng
 
 
 
@@ -321,12 +479,7 @@ class HrAttendance(models.Model):
 
     # === additional attendance fields ===
     date = fields.Date('Ngày', compute='_compute_date', store=True, index=True)
-    state = fields.Selection([
-        ('draft', 'Nháp'),
-        ('confirmed', 'Đã xác nhận'),
-        ('validated', 'Đã duyệt'),
-        ('rejected', 'Từ chối')
-    ], string='Trạng thái', default='confirmed', tracking=True)
+
 
     note = fields.Text('Ghi chú')
     check_in_note = fields.Char('Ghi chú vào', size=200)
@@ -394,14 +547,32 @@ class HrAttendance(models.Model):
                     raise ValidationError(
                         _('Nhân viên %s đã có bản ghi chấm công chưa kết thúc trong ngày %s') % (attendance.employee_id.name, attendance.date or ''))
     # === METHODS ===
-    def action_confirm(self):
+    def action_send_to_confirm(self):
         for record in self:
             if record.state == 'draft':
+                record.state = 'to_confirm'
+        return True
+
+    def action_confirm(self):
+        allowed_groups = [
+            'forher_company_overview.forher_group_branch_manager',
+            'forher_company_overview.forher_group_board',
+            'base.group_system',
+        ]
+        if not any(self.env.user.has_group(g) for g in allowed_groups):
+            raise UserError(_('Bạn không có quyền xác nhận chấm công.'))
+        for record in self:
+            if record.state == 'to_confirm':
                 record.state = 'confirmed'
         return True
 
     def action_validate(self):
-        if not self.env.user.has_group('forher_attendance.group_attendance_manager'):
+        allowed_groups = [
+            'forher_company_overview.forher_group_branch_manager',
+            'forher_company_overview.forher_group_board',
+            'base.group_system',  # admin
+        ]
+        if not any(self.env.user.has_group(g) for g in allowed_groups):
             raise UserError(_('Bạn không có quyền duyệt chấm công.'))
         for record in self:
             if record.state == 'confirmed':
@@ -409,11 +580,18 @@ class HrAttendance(models.Model):
         return True
 
     def action_reject(self):
-        if not self.env.user.has_group('forher_attendance.group_attendance_manager'):
+        allowed_groups = [
+            'forher_company_overview.forher_group_branch_manager',
+            'forher_company_overview.forher_group_board',
+            'base.group_system',  # admin
+        ]
+        if not any(self.env.user.has_group(g) for g in allowed_groups):
             raise UserError(_('Bạn không có quyền từ chối chấm công.'))
         for record in self:
-            record.state = 'rejected'
+            if record.state == 'confirmed':
+                record.state = 'rejected'
         return True
+
 
     @api.model
     def create_attendance(
@@ -628,9 +806,6 @@ class ForHerShift(models.Model):
             rec.duration = rec.end_time - rec.start_time if rec.end_time > rec.start_time else 0.0
 
 
-# =====================
-# PHÂN CA
-# =====================
 class ForHerShiftAssignment(models.Model):
     _name = "forher.shift.assignment"
     _description = "Phân ca cho nhân viên"
@@ -647,27 +822,35 @@ class ForHerShiftAssignment(models.Model):
     date_start = fields.Datetime("Bắt đầu ca", compute="_compute_date_start_stop", store=True)
     date_stop = fields.Datetime("Kết thúc ca", compute="_compute_date_start_stop", store=True)
 
-    from datetime import time
-
     name = fields.Char("Tên hiển thị", compute='_compute_name', store=True)
+
+    # Trường mới để hiển thị nhân viên gộp
+    grouped_employee_names = fields.Char(
+        string="Nhân viên", compute="_compute_grouped_employees", store=True)
+
+    @api.depends('employee_ids', 'company_id')
+    def _compute_grouped_employees(self):
+        for rec in self:
+            # sort theo công ty phân ca (company_id)
+            sorted_employees = rec.employee_ids.sorted(
+                key=lambda e: e.company_id.name if e.company_id else ''
+            )
+            rec.grouped_employee_names = ', '.join(emp.name for emp in sorted_employees)
+
 
     @api.depends('shift_id', 'date')
     def _compute_name(self):
         for rec in self:
             if rec.shift_id:
-                # Lấy giờ bắt đầu và kết thúc
                 start_hour = int(rec.shift_id.start_time)
                 start_minute = int((rec.shift_id.start_time - start_hour) * 60)
                 end_hour = int(rec.shift_id.end_time)
                 end_minute = int((rec.shift_id.end_time - end_hour) * 60)
                 start_str = f"{start_hour:02d}:{start_minute:02d}"
                 end_str = f"{end_hour:02d}:{end_minute:02d}"
-
-                # Hiển thị tên ca + giờ + ngày
                 rec.name = f"{rec.shift_id.name} ({start_str}-{end_str}) ({rec.date})"
             else:
                 rec.name = ""
-
 
     @api.depends('date', 'shift_id')
     def _compute_date_start_stop(self):
@@ -682,13 +865,22 @@ class ForHerShiftAssignment(models.Model):
             else:
                 rec.date_start = rec.date_stop = False
 
-    # Loại bỏ SQL constraint vì Many2many sẽ tạo nhiều bản ghi riêng biệt khi lưu
-    def name_get(self):
-        result = []
+    @api.constrains('date', 'shift_id', 'company_id')
+    def _check_unique_shift_per_day(self):
+        """Mỗi ngày chỉ được tạo 1 record cho mỗi ca trong cùng công ty."""
         for rec in self:
-            names = ", ".join(emp.name for emp in rec.employee_ids)
-            result.append((rec.id, f"{names} - {rec.shift_id.name} ({rec.date})"))
-        return result
+            # Tìm các record khác trùng ngày + ca + cùng công ty
+            domain = [
+                ('date', '=', rec.date),
+                ('shift_id', '=', rec.shift_id.id),
+                ('company_id', '=', rec.company_id.id),
+                ('id', '!=', rec.id)
+            ]
+            if self.search_count(domain):
+                raise ValidationError(
+                    f"Ngày {rec.date} đã có ca '{rec.shift_id.name}' cho chi nhánh '{rec.company_id.name}' rồi. "
+                    "Mỗi ngày chỉ được tạo tối đa 1 record cho mỗi ca trong cùng chi nhánh."
+                )
 
 
 # =====================
@@ -727,43 +919,65 @@ class ForHerViolationRecord(models.Model):
 # =====================
 # CRON CHECK VI PHẠM
 # =====================
+from dateutil.relativedelta import relativedelta
+from datetime import datetime, timedelta, date, time
+
 class HrAttendanceInherit(models.Model):
     _inherit = "hr.attendance"
 
-    is_late = fields.Boolean("Đi trễ")
-    is_early = fields.Boolean("Về sớm")
+    is_late = fields.Boolean("Đi trễ", compute="_compute_late_early", store=True)
+    is_early = fields.Boolean("Về sớm", compute="_compute_late_early", store=True)
 
     def action_check_violation(self):
-        """Check vi phạm đi trễ theo tháng"""
+        today = date.today()
+        start_month = today.replace(day=1)
+        end_month = (start_month + relativedelta(months=1)) - timedelta(days=1)
+
+        # Tạo hoặc lấy rule trực tiếp
+        rule_obj = self.env['forher.violation.rule']
         rules = {
-            1: self.env.ref("forher_attendance.rule_warning", raise_if_not_found=False),
-            2: self.env.ref("forher_attendance.rule_salary", raise_if_not_found=False),
-            3: self.env.ref("forher_attendance.rule_rank", raise_if_not_found=False),
+            1: rule_obj.search([('code', '=', 'L1')], limit=1) or 
+               rule_obj.create({'code': 'L1', 'name': 'Đi trễ lần 1', 'penalty_type': 'warning'}),
+            2: rule_obj.search([('code', '=', 'L2')], limit=1) or 
+               rule_obj.create({'code': 'L2', 'name': 'Đi trễ lần 2', 'penalty_type': 'salary_deduction'}),
+            3: rule_obj.search([('code', '=', 'L3')], limit=1) or 
+               rule_obj.create({'code': 'L3', 'name': 'Đi trễ lần 3+', 'penalty_type': 'rank_deduction'}),
         }
-        # group by employee + tháng
+
         employees = self.env["hr.employee"].search([])
         for emp in employees:
-            attendances = self.search([("employee_id", "=", emp.id), ("is_late", "=", True)])
-            late_count = len(attendances)
-            if late_count >= 1:
-                if late_count == 1 and rules[1]:
-                    self.env["forher.violation.record"].create({
-                        "employee_id": emp.id,
-                        "attendance_id": attendances[0].id,
-                        "violation_rule_id": rules[1].id,
-                        "note": "Đi trễ lần 1 trong tháng"
-                    })
-                elif late_count == 2 and rules[2]:
-                    self.env["forher.violation.record"].create({
-                        "employee_id": emp.id,
-                        "attendance_id": attendances[-1].id,
-                        "violation_rule_id": rules[2].id,
-                        "note": "Đi trễ lần 2 trong tháng"
-                    })
-                elif late_count >= 3 and rules[3]:
-                    self.env["forher.violation.record"].create({
-                        "employee_id": emp.id,
-                        "attendance_id": attendances[-1].id,
-                        "violation_rule_id": rules[3].id,
-                        "note": f"Đi trễ lần {late_count} trong tháng"
-                    })
+            # Lấy tất cả attendance trong tháng
+            attendances = self.search([
+                ("employee_id", "=", emp.id),
+                ("check_in", ">=", start_month),
+                ("check_in", "<=", end_month)
+            ])
+            attendances._compute_late_early()  # Recompute is_late
+
+            late_attendances = attendances.filtered(lambda r: r.is_late).sorted(key=lambda r: r.check_in)
+
+            for idx, att in enumerate(late_attendances, 1):
+                # Kiểm tra xem bản ghi vi phạm đã tồn tại chưa
+                existing = self.env["forher.violation.record"].search([("attendance_id", "=", att.id)], limit=1)
+                if existing:
+                    continue
+
+                # Xác định rule và note dựa trên lần trễ
+                if idx == 1:
+                    note = "Đi trễ lần 1 trong tháng"
+                    rule_id = rules[1].id
+                elif idx == 2:
+                    note = "Đi trễ lần 2 trong tháng"
+                    rule_id = rules[2].id
+                else:
+                    note = f"Đi trễ lần {idx} trong tháng"
+                    rule_id = rules[3].id
+
+                # Tạo bản ghi vi phạm
+                self.env["forher.violation.record"].create({
+                    "employee_id": emp.id,
+                    "attendance_id": att.id,
+                    "violation_rule_id": rule_id,
+                    "note": note
+                })
+                

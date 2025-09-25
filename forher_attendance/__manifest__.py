@@ -17,7 +17,7 @@
         'base',
         'forher_contract',
         'forher_company_overview',
-        'resource',
+        'resource','forher_leave',
     ],
     'data': [
         'security/attendance_security.xml',

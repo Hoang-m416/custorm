@@ -7,19 +7,27 @@
         <field name="model">hr.attendance</field>
         <field name="inherit_id" ref="hr_attendance.view_attendance_tree"/>
         <field name="arch" type="xml">
+        <!-- Ẩn validated_overtime_hours -->
+        <xpath expr="//field[@name='validated_overtime_hours']" position="replace"/>
+        <!-- Ẩn overtime_hours -->
+        <xpath expr="//field[@name='overtime_hours']" position="replace"/>
+
+        <!-- Ẩn cột Worked Hours -->
+        <xpath expr="//field[@name='worked_hours']" position="attributes">
+            <attribute name="invisible">1</attribute>
+        </xpath>
+        
             <field name="employee_id" position="after">
                 <field name="branch_id"/>
-                <field name="parent_company_id"/>
-                <field name="contract_type_id"/>
             </field>
             <field name="worked_hours" position="after">
                 <field name="attendance_type_id"/>
-                <field name="quantity"/>
-                <field name="total_amount"/>
                 <field name="recorded_by"/>
-                <field name="is_public"/>
                 <field name="is_late"/>
                 <field name="is_early"/>
+                <field name="is_holiday"/>
+                <field name="quantity" string="Tổng giờ làm"/>
+                <field name="total_amount"/>
                 <field name="state" widget="badge"
                        decoration-success="state == 'validated'"
                        decoration-warning="state == 'confirmed'"
@@ -29,24 +37,84 @@
         </field>
     </record>
 
+
+
      <record id="view_attendance_form_inherit" model="ir.ui.view">
         <field name="name">hr.attendance.form.forher</field>
         <field name="model">hr.attendance</field>
         <field name="inherit_id" ref="hr_attendance.hr_attendance_view_form"/>
         <field name="arch" type="xml">
+
+             <xpath expr="//field[@name='overtime_status']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+            <xpath expr="//field[@name='overtime_status']" position="replace"/>
+            <xpath expr="//button[@name='action_approve_overtime']" position="replace"/>
+            <xpath expr="//button[@name='action_refuse_overtime']" position="replace"/>
+            <!-- Ẩn validated_overtime_hours -->
+            <xpath expr="//field[@name='validated_overtime_hours']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <!-- Ẩn worked_hours -->
+            <xpath expr="//field[@name='worked_hours']" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </xpath>
+
+            <header>
+                <!-- Thanh trạng thái -->
+                <field name="state" widget="statusbar"
+                    options="{'draft':'secondary',
+                            'to_confirm':'blue',
+                            'confirmed':'purple',
+                            'validated':'green',
+                            'rejected':'red'}"/>
+
+                <!-- draft -->
+                <button name="action_send_to_confirm" string="Gửi xác nhận" type="object"
+                        class="btn-primary btn-dynamic"
+                        groups="forher_company_overview.forher_group_employee,base.group_system"
+                        invisible="state != 'draft'"/>
+
+                <!-- to_confirm -->
+                <button name="action_confirm" string="Xác nhận" type="object"
+                        class="btn-info btn-dynamic"
+                        groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board,base.group_system"
+                        invisible="state != 'to_confirm'"/>
+
+                <!-- confirmed -->
+                <button name="action_validate" string="Duyệt" type="object"
+                        class="btn-success btn-dynamic"
+                        groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board,base.group_system"
+                        invisible="state != 'confirmed'"/>
+                <button name="action_reject" string="Từ chối" type="object"
+                        class="btn-danger btn-dynamic"
+                        groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board,base.group_system"
+                        invisible="state != 'confirmed'"/>
+
+                <!-- validated hoặc rejected -->
+                <button name="action_set_draft" string="Đặt về Nháp" type="object"
+                        class="btn-secondary btn-dynamic"
+                        groups="base.group_system"
+                        invisible="state != 'validated' and state != 'rejected'"/>
+
+            </header>
+
+
             <!-- Khóa các field cơ bản -->
             <xpath expr="//field[@name='employee_id']" position="after">
                 <field name="branch_id" readonly="1"/>
                 <field name="parent_company_id" readonly="1"/>
                 <field name="contract_type_id" readonly="1"/>
                 <field name="date" readonly="1"/>
+                <field name="is_holiday"/>
             </xpath>
 
             <!-- Thêm nhóm Công & Loại công và Người ghi nhận -->
         <xpath expr="//sheet/group[1]" position="after">
             <group string="Công &amp; Loại công">
                 <field name="attendance_type_id"/>
-                <field name="quantity"/>
+                <field name="quantity" string="Tổng giờ làm"/>
                 <field name="total_amount"/>
                 <field name="is_late"/>
                 <field name="is_early"/>
@@ -60,37 +128,11 @@
         </field>
     </record>
 
-    <!-- ================= SEARCH VIEW ================= -->
-    <record id="view_attendance_search_forher" model="ir.ui.view">
-        <field name="name">hr.attendance.search.forher</field>
-        <field name="model">hr.attendance</field>
-        <field name="arch" type="xml">
-            <search string="Tìm kiếm Chấm công">
-                <field name="employee_id"/>
-                <field name="branch_id"/>
-                <field name="parent_company_id"/>
-                <field name="attendance_type_id"/>
-                <field name="date"/>
-                <filter name="pending_validation" string="Chờ duyệt" domain="[('state', '=', 'confirmed')]"/>
-                <filter name="validated" string="Đã duyệt" domain="[('state', '=', 'validated')]"/>
-                <filter name="draft" string="Nháp" domain="[('state', '=', 'draft')]"/>
-                <filter name="rejected" string="Từ chối" domain="[('state', '=', 'rejected')]"/>
-                <group expand="1" string="Nhóm theo">
-                    <filter name="groupby_employee" string="Nhân viên" context="{'group_by': 'employee_id'}"/>
-                    <filter name="groupby_state" string="Trạng thái" context="{'group_by': 'state'}"/>
-                    <filter name="groupby_branch" string="Chi nhánh" context="{'group_by': 'branch_id'}"/>
-                    <filter name="groupby_attendance_type" string="Loại công" context="{'group_by': 'attendance_type_id'}"/>
-                </group>
-            </search>
-        </field>
-    </record>
-
     <!-- ================= ACTION ================= -->
     <record id="hr_attendance_action" model="ir.actions.act_window">
         <field name="name">Chấm công</field>
         <field name="res_model">hr.attendance</field>
         <field name="view_mode">tree,form</field>
-        <field name="search_view_id" ref="view_attendance_search_forher"/>
     </record>
 
 </odoo>

@@ -2,6 +2,7 @@ from odoo import fields, models, api, _
 from datetime import datetime, timedelta
 import calendar
 import logging
+from dateutil.relativedelta import relativedelta
 
 _logger = logging.getLogger(__name__)
 
@@ -32,6 +33,8 @@ class ForHerHrContract(models.Model):
         ('cancel', 'Cancelled')
     ], string='Status', group_expand=True, copy=False,
         tracking=True, help='Status of the contract', default='draft')
+    contract_signature = fields.Binary(string="Signature")
+    is_my_contract = fields.Boolean(string="Is My Contract", compute='_compute_is_my_contract')
 
 
     @api.model_create_multi
@@ -221,16 +224,15 @@ class ForHerHrContract(models.Model):
             record.state = 'cancel'
             record.message_post(body="Contract rejected and cancelled.")
 
-    
+
     employee_id = fields.Many2one('hr.employee', string='Employee')
     job_id = fields.Many2one('hr.job', string='Job')
     company_id = fields.Many2one('res.company', string='Company')
-    
+
     renewal_count = fields.Integer(string="Renewal Count", default=0, tracking=True)
     last_renewal_date = fields.Date(string="Last Renewal Date", readonly=True)
 
     def action_renew_contract(self, months=12):
-        from dateutil.relativedelta import relativedelta
         for contract in self:
             if contract.state not in ['close', 'cancel']:
                 raise ValueError(_("Chỉ có thể gia hạn khi hợp đồng đã hết hạn hoặc bị hủy."))
@@ -262,17 +264,34 @@ class ForHerHrContract(models.Model):
             if record.state != 'cancel':
                 record.state = 'cancel'
                 record.message_post(body=_("Hợp đồng đã được hủy."))
-    
+
     # Phụ cấp cho hợp đồng
     allowance_ids = fields.One2many('forher.hr.contract.allowance', 'contract_id', string='Allowances')
 
     # Tổng phụ cấp
     total_allowance = fields.Float(string='Total Allowance', compute='_compute_total_allowance', store=True)
 
+    def _compute_is_my_contract(self):
+        for contract in self:
+            contract.is_my_contract = (contract.employee_id.user_id == self.env.user)
+
     @api.depends('allowance_ids.amount')
     def _compute_total_allowance(self):
         for contract in self:
             contract.total_allowance = sum(contract.allowance_ids.mapped('amount'))
+
+    def signature_contract(self):
+        view_id = self.env.ref('forher_contract.view_contract_signature_wizard_form').id
+        vals = {
+            'type': 'ir.actions.act_window',
+            'name': _('Signature'),
+            'res_model': 'contract.signature.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_contract_forher_id': self.id},
+            'views': [[view_id, 'form']]
+        }
+        return vals
 
 class ForHerHrContractAllowance(models.Model):
     _name = 'forher.hr.contract.allowance'

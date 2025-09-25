@@ -1,0 +1,162 @@
+<odoo>
+    <record id="view_forher_payslip_tree" model="ir.ui.view">
+        <field name="name">forher.payslip.tree</field>
+        <field name="model">forher.payslip</field>
+        <field name="arch" type="xml">
+            <list string="Phiếu lương">
+                <field name="name"/>
+                <field name="employee_id"/>
+                <field name="run_id"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="total_gross"/>
+                <field name="total_deduction"/>
+                <field name="total_net"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_forher_payslip_form" model="ir.ui.view">
+        <field name="name">forher.payslip.form</field>
+        <field name="model">forher.payslip</field>
+        <field name="arch" type="xml">
+            <form string="Phiếu lương">
+                <header>
+                    <button name="action_compute_sheet" type="object" string="Tính toán" class="btn-primary" modifiers="{'invisible': [('state', '!=', 'draft')]}" groups="forher_payroll.group_forher_payroll_manager,forher_payroll.group_forher_payroll_accountant"/>
+                    <button name="action_confirm" type="object" string="Xác nhận" class="btn-primary" modifiers="{'invisible': [('state', '!=', 'computed')]}" groups="forher_payroll.group_forher_payroll_manager,forher_payroll.group_forher_payroll_accountant"/>
+                    <button name="action_done" type="object" string="Đánh dấu đã chi trả" class="btn-primary" modifiers="{'invisible': [('state', '!=', 'confirmed')]}" groups="forher_payroll.group_forher_payroll_manager,forher_payroll.group_forher_payroll_accountant"/>
+                    <button name="action_reset_to_draft" type="object" string="Chuyển về nháp" class="btn-secondary" modifiers="{'invisible': [('state', 'not in', ['computed', 'confirmed', 'cancelled'])]}" groups="forher_payroll.group_forher_payroll_manager,forher_payroll.group_forher_payroll_accountant"/>
+                    <button name="action_cancel" type="object" string="Hủy" class="btn-secondary" modifiers="{'invisible': [('state', 'not in', ['draft', 'computed', 'confirmed'])]}" groups="forher_payroll.group_forher_payroll_manager,forher_payroll.group_forher_payroll_accountant"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,computed,confirmed,done" readonly="1"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="employee_id" options="{'no_open': True}" string="Nhân viên"/>
+                            <field name="contract_id" options="{'no_open': True}" string="Hợp đồng"/>
+                            <field name="structure_id" options="{'no_open': True}" string="Cấu trúc lương"/>
+                            <field name="run_id" options="{'no_open': True}" string="Kỳ lương"/>
+                        </group>
+                        <group>
+                            <field name="date_from" string="Từ ngày"/>
+                            <field name="date_to" string="Đến ngày"/>
+                            <field name="worked_hours_total" readonly="1" string="Giờ công"/>
+                            <field name="worked_day_count" readonly="1" string="Ngày làm"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Thông số tính lương">
+                            <field name="leave_days"/>
+                            <field name="auto_leave_day_count" readonly="1"/>
+                            <field name="ot_normal_hours"/>
+                            <field name="ot_holiday_hours"/>
+                            <field name="abc_rating"/>
+                        </group>
+                        <group string="Doanh số và phụ trội">
+                            <field name="sales_total_amount" readonly="1" string="Doanh số"/>
+                            <field name="sales_products_count" readonly="1" string="Sản phẩm"/>
+                            <field name="advance_amount"/>
+                            <field name="penalty_amount"/>
+                        </group>
+                    </group>
+                    <separator string="Tổng hợp"/>
+                    <group>
+                        <field name="total_gross" readonly="1" string="Thu nhập gộp"/>
+                        <field name="total_deduction" readonly="1" string="Khấu trừ"/>
+                        <field name="total_net" readonly="1" string="Thực lãnh"/>
+                    </group>
+                    <notebook>
+                        <page string="Chi tiết lương">
+                            <field name="line_ids" groups="forher_payroll.group_forher_payroll_manager,forher_payroll.group_forher_payroll_accountant" modifiers="{'readonly': [('state', 'in', ['done', 'cancelled', 'confirmed'])]}">
+                                <list string="Chi tiết lương" editable="bottom">
+                                    <field name="sequence" string="Thứ tự"/>
+                                    <field name="name" string="Chỉ tiêu"/>
+                                    <field name="code" string="Mã"/>
+                                    <field name="rule_type" string="Loại"/>
+                                    <field name="quantity" string="Số lượng"/>
+                                    <field name="rate" string="Tỷ lệ"/>
+                                    <field name="amount" string="Số tiền"/>
+                                    <field name="note" string="Ghi chú"/>
+                                </list>
+                                <form string="Chi tiết lương">
+                                    <group>
+                                        <group>
+                                            <field name="name" string="Chỉ tiêu"/>
+                                            <field name="code" string="Mã"/>
+                                            <field name="rule_type" string="Loại"/>
+                                            <field name="sequence" string="Thứ tự"/>
+                                            <field name="rule_id" string="Quy tắc"/>
+                                        </group>
+                                        <group>
+                                            <field name="quantity" string="Số lượng"/>
+                                            <field name="rate" string="Tỷ lệ"/>
+                                            <field name="amount" string="Số tiền"/>
+                                            <field name="note" string="Ghi chú"/>
+                                        </group>
+                                    </group>
+                                </form>
+                            </field>
+                            <field name="line_ids" groups="forher_payroll.group_forher_payroll_user" readonly="1">
+                                <list string="Chi tiết lương" create="0" edit="0">
+                                    <field name="sequence" string="Thứ tự"/>
+                                    <field name="name" string="Chỉ tiêu"/>
+                                    <field name="code" string="Mã"/>
+                                    <field name="rule_type" string="Loại"/>
+                                    <field name="quantity" string="Số lượng"/>
+                                    <field name="rate" string="Tỷ lệ"/>
+                                    <field name="amount" string="Số tiền"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter>
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </chatter>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_forher_payslip_search" model="ir.ui.view">
+        <field name="name">forher.payslip.search</field>
+        <field name="model">forher.payslip</field>
+        <field name="arch" type="xml">
+            <search string="Tìm kiếm phiếu lương">
+                <field name="name" string="Mã"/>
+                <field name="employee_id" string="Nhân viên"/>
+                <field name="run_id" string="Kỳ lương"/>
+                <filter name="draft" string="Nháp" domain="[('state', '=', 'draft')]"/>
+                <filter name="confirmed" string="Đã xác nhận" domain="[('state', '=', 'confirmed')]"/>
+                <filter name="done" string="Đã chi trả" domain="[('state', '=', 'done')]"/>
+                <group expand="0" string="Nhóm theo">
+                    <filter string="Nhân viên" name="group_employee" context="{'group_by': 'employee_id'}"/>
+                    <filter string="Kỳ lương" name="group_run" context="{'group_by': 'run_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="forher_payroll_payslip_action" model="ir.actions.act_window">
+        <field name="name">Phiếu lương</field>
+        <field name="res_model">forher.payslip</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_forher_payslip_tree"/>
+        <field name="search_view_id" ref="view_forher_payslip_search"/>
+        <field name="context">{}</field>
+    </record>
+
+    <record id="forher_payroll_my_payslip_action" model="ir.actions.act_window">
+        <field name="name">Phiếu lương của tôi</field>
+        <field name="res_model">forher.payslip</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_forher_payslip_tree"/>
+        <field name="search_view_id" ref="view_forher_payslip_search"/>
+        <field name="domain">[('employee_id.user_id', '=', uid)]</field>
+        <field name="context">{}</field>
+    </record>
+</odoo>

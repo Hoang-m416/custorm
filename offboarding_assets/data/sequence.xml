@@ -1,8 +1,9 @@
 <odoo>
-    <record id="seq_offb_assets" model="ir.sequence">
-        <field name="name">FORHER Offboarding</field>
+    <record id="seq_offboarding_assets" model="ir.sequence">
+        <field name="name">Mã phiếu thu hồi</field>
         <field name="code">forher.offboarding.assets</field>
-        <field name="prefix">OFFB/%(year)s/</field>
-        <field name="padding">5</field>
+        <field name="prefix">OFFB/</field>
+        <field name="padding">4</field>
+        <field name="company_id" eval="False"/>
     </record>
 </odoo>

@@ -1,6 +1,6 @@
 <odoo>
     <!-- Main menu -->
-    <menuitem id="menu_forher_root" name="Tuyển dụng" sequence="10"
+    <menuitem id="menu_forher_root" name="Tuyển Dụng" sequence="2"
               groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board,base.group_system"/>
 
     <!-- Recruitment Request -->

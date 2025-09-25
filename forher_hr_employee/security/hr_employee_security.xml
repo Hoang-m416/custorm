@@ -9,6 +9,10 @@
         <field name="model_id" ref="hr.model_hr_employee"/>
         <field name="domain_force">[(1,'=',1)]</field>
         <field name="groups" eval="[(4, ref('forher_company_overview.forher_group_board'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>  <!-- Giám đốc chỉ đọc/sửa/xóa -->
+        <field name="perm_unlink" eval="True"/>
     </record>
 
     <!-- Branch Manager: chỉ thấy nhân viên chi nhánh -->
@@ -17,6 +21,10 @@
         <field name="model_id" ref="hr.model_hr_employee"/>
         <field name="domain_force">[('company_id','=',user.company_id.id)]</field>
         <field name="groups" eval="[(4, ref('forher_company_overview.forher_group_branch_manager'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
     </record>
 
     <!-- Employee: chỉ thấy chính mình -->
@@ -25,6 +33,10 @@
         <field name="model_id" ref="hr.model_hr_employee"/>
         <field name="domain_force">[('id','in',user.employee_ids.ids)]</field>
         <field name="groups" eval="[(4, ref('forher_company_overview.forher_group_employee'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>  <!-- Ẩn nút New -->
+        <field name="perm_unlink" eval="False"/>
     </record>
 
     <!-- ================= HR Employee Document Rules ================= -->
@@ -35,6 +47,10 @@
         <field name="model_id" ref="model_hr_employee_document"/>
         <field name="domain_force">[(1,'=',1)]</field>
         <field name="groups" eval="[(4, ref('forher_company_overview.forher_group_board'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="True"/>
     </record>
 
     <!-- Branch Manager: chỉ thấy hồ sơ nhân viên chi nhánh -->
@@ -43,6 +59,10 @@
         <field name="model_id" ref="model_hr_employee_document"/>
         <field name="domain_force">[('employee_id.company_id','=',user.company_id.id)]</field>
         <field name="groups" eval="[(4, ref('forher_company_overview.forher_group_branch_manager'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="False"/>
     </record>
 
     <!-- Employee: chỉ thấy hồ sơ của chính mình -->
@@ -51,6 +71,10 @@
         <field name="model_id" ref="model_hr_employee_document"/>
         <field name="domain_force">[('employee_id','in',user.employee_ids.ids)]</field>
         <field name="groups" eval="[(4, ref('forher_company_overview.forher_group_employee'))]"/>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>  <!-- Không tạo hồ sơ mới -->
+        <field name="perm_unlink" eval="False"/>
     </record>
 
 </odoo>

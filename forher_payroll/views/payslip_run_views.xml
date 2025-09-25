@@ -1,0 +1,103 @@
+<odoo>
+    <record id="view_forher_payslip_run_tree" model="ir.ui.view">
+        <field name="name">forher.payslip.run.tree</field>
+        <field name="model">forher.payslip.run</field>
+        <field name="arch" type="xml">
+            <list string="Kỳ tính lương">
+                <field name="name"/>
+                <field name="date_start"/>
+                <field name="date_end"/>
+                <field name="payslip_count"/>
+                <field name="state"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_forher_payslip_run_form" model="ir.ui.view">
+        <field name="name">forher.payslip.run.form</field>
+        <field name="model">forher.payslip.run</field>
+        <field name="arch" type="xml">
+            <form string="Kỳ tính lương">
+                <header>
+                    <button name="action_generate_payslips" type="object" string="Tạo phiếu lương" class="btn-primary" modifiers="{'invisible': [('state', 'not in', ['draft', 'cancelled'])]}" groups="forher_payroll.group_forher_payroll_manager,forher_payroll.group_forher_payroll_accountant,base.group_system"/>
+                    <button name="action_compute" type="object" string="Tính toán" class="btn-primary" modifiers="{'invisible': [('state', '!=', 'generated')]}" groups="forher_payroll.group_forher_payroll_manager,forher_payroll.group_forher_payroll_accountant,base.group_system"/>
+                    <button name="action_validate" type="object" string="Xác nhận" class="btn-primary" modifiers="{'invisible': [('state', '!=', 'computed')]}" groups="forher_payroll.group_forher_payroll_manager,forher_payroll.group_forher_payroll_accountant,base.group_system"/>
+                    <button name="action_done" type="object" string="Đánh dấu hoàn tất" class="btn-primary" modifiers="{'invisible': [('state', '!=', 'validated')]}" groups="forher_payroll.group_forher_payroll_manager,forher_payroll.group_forher_payroll_accountant,base.group_system"/>
+                    <button name="action_reset_to_draft" type="object" string="Chuyển về nháp" class="btn-secondary" modifiers="{'invisible': [('state', 'not in', ['generated', 'computed', 'validated', 'cancelled'])]}" groups="forher_payroll.group_forher_payroll_manager,base.group_system"/>
+                    <button name="action_cancel" type="object" string="Hủy" class="btn-secondary" modifiers="{'invisible': [('state', 'not in', ['draft', 'generated', 'computed', 'validated'])]}" groups="forher_payroll.group_forher_payroll_manager,base.group_system"/>
+                    <button name="action_open_import_wizard" type="object" string="Nhập dữ liệu doanh số" class="btn-secondary" modifiers="{'invisible': [('state', 'not in', ['draft', 'generated', 'computed', 'validated'])]}" groups="forher_payroll.group_forher_payroll_manager,forher_payroll.group_forher_payroll_accountant,base.group_system"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,generated,computed,validated,done" readonly="1"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <div class="oe_button_box" name="button_box">
+                        <button type="object" string="Phiếu lương" name="action_view_payslips" class="oe_stat_button" icon="fa-file-text-o">
+                            <field name="payslip_count" string="Phiếu lương" widget="statinfo"/>
+                        </button>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="date_start"/>
+                            <field name="date_end"/>
+                            <field name="company_id"/>
+                        </group>
+                        <group>
+                            <field name="payslip_count" readonly="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Danh sách phiếu lương">
+                            <field name="payslip_ids" readonly="1">
+                                <list string="Phiếu lương" create="0" edit="0">
+                                    <field name="name"/>
+                                    <field name="employee_id"/>
+                                    <field name="total_net"/>
+                                    <field name="state"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Dữ liệu doanh số" groups="forher_payroll.group_forher_payroll_manager,forher_payroll.group_forher_payroll_accountant">
+                            <field name="sales_data_ids" modifiers="{'readonly': [('state', 'in', ['done', 'cancelled'])]}">
+                                <list string="Dữ liệu doanh số">
+                                    <field name="employee_id"/>
+                                    <field name="products_sold"/>
+                                    <field name="amount"/>
+                                    <field name="reference"/>
+                                    <field name="note"/>
+                                    <field name="date"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_forher_payslip_run_search" model="ir.ui.view">
+        <field name="name">forher.payslip.run.search</field>
+        <field name="model">forher.payslip.run</field>
+        <field name="arch" type="xml">
+            <search string="Tìm kiếm kỳ tính lương">
+                <field name="name"/>
+                <field name="state"/>
+                <filter name="draft" string="Nháp" domain="[('state', '=', 'draft')]"/>
+                <filter name="done" string="Hoàn tất" domain="[('state', '=', 'done')]"/>
+                <group expand="0" string="Nhóm theo">
+                    <filter string="Công ty" name="group_company" context="{'group_by': 'company_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="forher_payroll_run_action" model="ir.actions.act_window">
+        <field name="name">Kỳ tính lương</field>
+        <field name="res_model">forher.payslip.run</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_forher_payslip_run_tree"/>
+        <field name="search_view_id" ref="view_forher_payslip_run_search"/>
+        <field name="context">{'search_default_state': 'draft'}</field>
+    </record>
+</odoo>

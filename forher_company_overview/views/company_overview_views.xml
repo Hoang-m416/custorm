@@ -1,7 +1,8 @@
 <odoo>
     <!-- Menu root -->
     <menuitem id="menu_forher_company_root"
-              name="Công ty Forher"
+              name="FORHER SHOP"
+              sequence="1"
               groups="base.group_user"/>
 
     <!-- Action tổng quan công ty -->
@@ -24,17 +25,27 @@
         <field name="model">forher.company.overview</field>
         <field name="arch" type="xml">
             <kanban>
-                <field name="company_id"/>
-                <field name="business_field"/>
-                <templates>
-                    <t t-name="kanban-box" t-key="record.id">
-                        <div class="o_kanban_record">
-                            <strong><field name="company_id"/></strong>
-                            <div><field name="business_field"/></div>
-                        </div>
-                    </t>
-                </templates>
-            </kanban>
+    <templates>
+        <t t-name="kanban-box" t-key="record.id">
+            <div class="o_kanban_record">
+                <strong><field name="company_id"/></strong>
+                <div><field name="business_field"/></div>
+            </div>
+        </t>
+
+        <!-- Footer hiển thị một lần -->
+        <t t-name="kanban-box-footer">
+            <div class="o_kanban_footer text-center p-3">
+                <h5 class="text-primary">Công ty thời trang Forher</h5>
+                <p class="text-muted">
+                    Forher – thương hiệu thời trang hiện đại, mang đến phong cách, 
+                    chất lượng và xu hướng mới cho phái đẹp.
+                </p>
+            </div>
+        </t>
+    </templates>
+</kanban>
+
         </field>
     </record>
 

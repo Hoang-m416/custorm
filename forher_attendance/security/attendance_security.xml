@@ -24,5 +24,12 @@
             <field name="groups" eval="[(4, ref('forher_company_overview.forher_group_employee'))]"/>
         </record>
 
+        <!-- Board: Thấy tất cả -->
+        <record id="rule_attendance_board_all" model="ir.rule">
+            <field name="name">Attendance - Board All</field>
+            <field name="model_id" ref="forher_attendance.model_forher_shift_assignment"/>
+            <field name="groups" eval="[(4, ref('forher_company_overview.forher_group_board'))]"/>
+            <field name="domain_force">[(1,'=',1)]</field>
+        </record>
     </data>
 </odoo>

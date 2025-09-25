@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <!-- Contract Signature Wizard Form View -->
+        <record id="view_contract_signature_wizard_form" model="ir.ui.view">
+            <field name="name">contract.signature.wizard.form</field>
+            <field name="model">contract.signature.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Contract Signature">
+                    <sheet>
+                        <field name="contract_forher_id" invisible="1"/>
+                        <group string="Digital Signature">
+                            <field name="signature" widget="signature"
+                                   nolabel="1"/>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button name="action_signature" string="Sign Contract"
+                                type="object" class="btn-primary" />
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+
+    </data>
+</odoo>

@@ -1,0 +1,7 @@
+<odoo>
+    <menuitem id="menu_leave_root" name="Nghỉ phép" sequence="3"/>
+
+    <menuitem id="menu_leave_type" name="Loại nghỉ" parent="menu_leave_root" action="action_leave_type" sequence="2"/>
+    <menuitem id="menu_holiday" name="Ngày lễ" parent="menu_leave_root" action="action_holiday" sequence="3"/>
+    <menuitem id="menu_leave_request" name="Yêu cầu nghỉ phép" parent="menu_leave_root" action="action_leave_request" sequence="1"/>
+</odoo>

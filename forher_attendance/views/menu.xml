@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
   <data>
+    <record id="hr_attendance.menu_hr_attendance_root" model="ir.ui.menu">
+        <field name="active" eval="False"/>
+    </record>
     <!-- Menu gốc Chấm công -->
     <menuitem id="menu_forher_attendance_root"
-              name="Chấm công"
-              sequence="20"
+              name="Chấm Công"
+              sequence="4"
               groups="forher_company_overview.forher_group_board,forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_employee,base.group_system"/>
 
     <!-- Action Tổng quan cho Quản lý/Giám đốc -->

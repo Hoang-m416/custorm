@@ -18,9 +18,11 @@
                     <button name="action_cancel_contract" string="Hủy hợp đồng" type="object"
                             class="oe_highlight" invisible="state == 'cancel'"
                             groups="forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board,base.group_system"/>
-                    <field name="state" 
-                        widget="statusbar" 
-                        statusbar_visible="draft,waiting_approval,open,close" 
+                    <button name="signature_contract" string="Ký hợp đồng" type="object"
+                            class="oe_highlight" invisible="is_my_contract != True"/>
+                    <field name="state"
+                        widget="statusbar"
+                        statusbar_visible="draft,waiting_approval,open,close"
                         readonly="1"/>
                 </header>
                 <sheet>
@@ -36,20 +38,13 @@
                             <field name="job_id" string="Chức danh"/>
                             <field name="state" string="Trạng thái" readonly="1"/>
                             <field name="contract_type_id" string="Loại hợp đồng"/>
+                            <field name="is_my_contract" invisible="0"/>
                         </group>
                         <group string="Thời gian hợp đồng">
                             <field name="date_start" string="Ngày bắt đầu"/>
                             <field name="date_end" string="Ngày kết thúc"/>
                             <field name="trial_date_end" string="Ngày kết thúc thử việc"/>
                             <field name="calendar_id"/>
-                            <field name="attendance_ids" readonly="1">
-                                <list>
-                                    <field name="name"/>
-                                    <field name="dayofweek"/>
-                                    <field name="hour_from"/>
-                                    <field name="hour_to"/>
-                                </list>
-                            </field>
                         </group>
                     </group>
                     <notebook>
@@ -70,7 +65,7 @@
                                 </group>
                             </group>
                         </page>
-                        
+
                         <page string="Phụ cấp" name="allowances">
                             <group>
                                 <field name="allowance_ids">
@@ -88,7 +83,11 @@
                                 <field name="total_allowance" string="Tổng phụ cấp" readonly="1"/>
                             </group>
                         </page>
-
+                        <page string="Chữ ký hợp đồng" name="signature">
+                            <group>
+                                <field name="contract_signature" widget="signature" string="Chữ ký điện tử"/>
+                            </group>
+                        </page>
                     </notebook>
                 </sheet>
             </form>
@@ -106,7 +105,14 @@
                 <field name="date_start" string="Ngày bắt đầu"/>
                 <field name="date_end" string="Ngày kết thúc"/>
                 <field name="wage" string="Lương"/>
-                <field name="state" string="Trạng thái" readonly="1"/>
+                <field name="state" string="Trạng thái" widget="badge" readonly="1"
+                        options="{
+                            'secondary': ['draft'],
+                            'info': ['waiting_approval'],
+                            'success': ['open'],
+                            'danger': ['close'],
+                            'dark': ['cancel']
+                        }"/>
             </list>
         </field>
     </record>

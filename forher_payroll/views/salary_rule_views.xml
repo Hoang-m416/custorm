@@ -1,0 +1,93 @@
+<odoo>
+    <record id="view_forher_salary_structure_tree" model="ir.ui.view">
+        <field name="name">forher.salary.structure.tree</field>
+        <field name="model">forher.salary.structure</field>
+        <field name="arch" type="xml">
+            <list string="Cấu trúc lương">
+                <field name="name" string="Tên"/>
+                <field name="company_id" string="Công ty"/>
+                <field name="active" string="Đang sử dụng"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_forher_salary_structure_form" model="ir.ui.view">
+        <field name="name">forher.salary.structure.form</field>
+        <field name="model">forher.salary.structure</field>
+        <field name="arch" type="xml">
+            <form string="Cấu trúc lương">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name" string="Tên"/>
+                            <field name="company_id" string="Công ty"/>
+                            <field name="active" string="Đang sử dụng"/>
+                        </group>
+                        <group>
+                            <field name="note" placeholder="Thêm ghi chú nội bộ cho cấu trúc lương này."/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Quy tắc lương">
+                            <field name="rule_ids">
+                                <list string="Quy tắc lương" editable="bottom">
+                                    <field name="sequence" string="Thứ tự"/>
+                                    <field name="name" string="Tên"/>
+                                    <field name="code" string="Mã"/>
+                                    <field name="rule_type" string="Loại"/>
+                                    <field name="always_include" string="Luôn hiển thị"/>
+                                </list>
+                                <form string="Quy tắc lương">
+                                    <group>
+                                        <group>
+                                            <field name="name" string="Tên"/>
+                                            <field name="code" string="Mã"/>
+                                            <field name="sequence" string="Thứ tự"/>
+                                            <field name="rule_type" string="Loại"/>
+                                            <field name="always_include" string="Luôn hiển thị trên phiếu lương"/>
+                                        </group>
+                                        <group>
+                                            <field name="description" string="Mô tả"/>
+                                        </group>
+                                    </group>
+                                    <group>
+                                        <field name="amount_python_compute" widget="ace" options="{'mode': 'python'}" string="Mã Python"/>
+                                    </group>
+                                </form>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_forher_salary_structure_search" model="ir.ui.view">
+        <field name="name">forher.salary.structure.search</field>
+        <field name="model">forher.salary.structure</field>
+        <field name="arch" type="xml">
+            <search string="Tìm kiếm cấu trúc lương">
+                <field name="name" string="Tên"/>
+                <filter string="Đang sử dụng" name="active" domain="[('active', '=', True)]"/>
+                <filter string="Ngừng sử dụng" name="inactive" domain="[('active', '=', False)]"/>
+                <group expand="0" string="Nhóm theo">
+                    <filter string="Công ty" name="group_company" context="{'group_by': 'company_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="forher_salary_structure_action" model="ir.actions.act_window">
+        <field name="name">Cấu trúc lương</field>
+        <field name="res_model">forher.salary.structure</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_forher_salary_structure_tree"/>
+        <field name="search_view_id" ref="view_forher_salary_structure_search"/>
+        <field name="context">{'search_default_active': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Tạo các cấu trúc lương được sử dụng bởi các quy tắc lương.
+            </p>
+        </field>
+    </record>
+</odoo>

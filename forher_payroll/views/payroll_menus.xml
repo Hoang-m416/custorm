@@ -1,0 +1,61 @@
+<odoo>
+    <!-- Menu gốc Payroll -->
+    <menuitem id="menu_forher_payroll_root"
+              name="PayRoll Forher"
+              sequence="4"
+              groups="forher_payroll.group_forher_payroll_manager,forher_payroll.group_forher_payroll_accountant,forher_payroll.group_forher_payroll_user,forher_company_overview.forher_group_employee,forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board,base.group_system"/>
+
+    <!-- Tác nghiệp -->
+    <menuitem id="menu_forher_payroll_operations"
+              name="Tác nghiệp"
+              parent="menu_forher_payroll_root"
+              sequence="2"
+              groups="forher_payroll.group_forher_payroll_manager,forher_payroll.group_forher_payroll_accountant,forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board,base.group_system"/>
+
+    <!-- Kỳ tính lương -->
+    <menuitem id="menu_forher_payroll_runs"
+              name="Kỳ tính lương"
+              parent="menu_forher_payroll_operations"
+              action="forher_payroll_run_action"
+              sequence="3"
+              groups="forher_payroll.group_forher_payroll_manager,forher_payroll.group_forher_payroll_accountant,forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board,base.group_system"/>
+
+    <!-- Tất cả phiếu lương -->
+    <menuitem id="menu_forher_payroll_all_payslips"
+              name="Tất cả phiếu lương"
+              parent="menu_forher_payroll_operations"
+              action="forher_payroll_payslip_action"
+              sequence="4"
+              groups="forher_payroll.group_forher_payroll_manager,forher_payroll.group_forher_payroll_accountant,forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board,base.group_system"/>
+
+    <!-- Dữ liệu doanh số -->
+    <menuitem id="menu_forher_payroll_sales_data"
+              name="Dữ liệu doanh số"
+              parent="menu_forher_payroll_operations"
+              action="forher_payroll_sales_data_action"
+              sequence="5"
+              groups="forher_payroll.group_forher_payroll_manager,forher_payroll.group_forher_payroll_accountant,forher_company_overview.forher_group_branch_manager,forher_company_overview.forher_group_board,base.group_system"/>
+
+    <!-- Cấu hình -->
+    <menuitem id="menu_forher_payroll_configuration"
+              name="Cấu hình"
+              parent="menu_forher_payroll_root"
+              sequence="6"
+              groups="forher_payroll.group_forher_payroll_manager,forher_company_overview.forher_group_board,base.group_system"/>
+
+    <!-- Cấu trúc lương -->
+    <menuitem id="menu_forher_payroll_salary_structures"
+              name="Cấu trúc lương"
+              parent="menu_forher_payroll_configuration"
+              action="forher_salary_structure_action"
+              sequence="7"
+              groups="forher_payroll.group_forher_payroll_manager,forher_company_overview.forher_group_board,base.group_system"/>
+
+    <!-- Phiếu lương cá nhân -->
+    <menuitem id="menu_forher_payroll_my_payslips"
+              name="Phiếu lương của tôi"
+              parent="menu_forher_payroll_root"
+              action="forher_payroll_my_payslip_action"
+              sequence="1"
+              groups="forher_payroll.group_forher_payroll_user,forher_company_overview.forher_group_employee,base.group_system"/>
+</odoo>

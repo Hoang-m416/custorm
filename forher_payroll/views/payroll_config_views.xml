@@ -1,0 +1,92 @@
+<odoo>
+    <record id="view_forher_contract_form_payroll" model="ir.ui.view">
+        <field name="name">forher.hr.contract.form.payroll</field>
+        <field name="model">forher.hr.contract</field>
+        <field name="inherit_id" ref="forher_contract.forher_hr_contract_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='wage']" position="after">
+                <field name="salary_structure_id" options="{'no_open': True}" string="Cấu trúc lương"/>
+                <field name="position_allowance" string="Phụ cấp chức vụ"/>
+                <field name="job_allowance" string="Phụ cấp công việc"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_forher_contract_tree_payroll" model="ir.ui.view">
+        <field name="name">forher.hr.contract.tree.payroll</field>
+        <field name="model">forher.hr.contract</field>
+        <field name="inherit_id" ref="forher_contract.forher_hr_contract_list_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='wage']" position="after">
+                <field name="salary_structure_id" string="Cấu trúc lương"/>
+                <field name="position_allowance" string="Phụ cấp chức vụ"/>
+                <field name="job_allowance" string="Phụ cấp công việc"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_forher_payroll_sales_data_tree" model="ir.ui.view">
+        <field name="name">forher.payroll.sales.data.tree</field>
+        <field name="model">forher.payroll.sales.data</field>
+        <field name="arch" type="xml">
+            <list string="Bản ghi doanh số">
+                <field name="run_id" string="Kỳ lương"/>
+                <field name="employee_id" string="Nhân viên"/>
+                <field name="products_sold" string="Sản phẩm"/>
+                <field name="amount" string="Số tiền"/>
+                <field name="reference" string="Tham chiếu"/>
+                <field name="note" string="Ghi chú"/>
+                <field name="date" string="Ngày"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_forher_payroll_sales_data_form" model="ir.ui.view">
+        <field name="name">forher.payroll.sales.data.form</field>
+        <field name="model">forher.payroll.sales.data</field>
+        <field name="arch" type="xml">
+            <form string="Chi tiết doanh số">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="run_id" string="Kỳ lương"/>
+                            <field name="employee_id" string="Nhân viên"/>
+                            <field name="products_sold" string="Số sản phẩm"/>
+                            <field name="amount" string="Số tiền"/>
+                            <field name="currency_id" string="Tiền tệ"/>
+                        </group>
+                        <group>
+                            <field name="date" string="Ngày"/>
+                            <field name="reference" string="Tham chiếu"/>
+                            <field name="note" string="Ghi chú"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_forher_payroll_sales_data_search" model="ir.ui.view">
+        <field name="name">forher.payroll.sales.data.search</field>
+        <field name="model">forher.payroll.sales.data</field>
+        <field name="arch" type="xml">
+            <search string="Tìm kiếm dữ liệu doanh số">
+                <field name="run_id" string="Kỳ lương"/>
+                <field name="employee_id" string="Nhân viên"/>
+                <group expand="0" string="Nhóm theo">
+                    <filter string="Kỳ lương" name="group_run" context="{'group_by': 'run_id'}"/>
+                    <filter string="Nhân viên" name="group_employee" context="{'group_by': 'employee_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="forher_payroll_sales_data_action" model="ir.actions.act_window">
+        <field name="name">Dữ liệu doanh số</field>
+        <field name="res_model">forher.payroll.sales.data</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_forher_payroll_sales_data_tree"/>
+        <field name="search_view_id" ref="view_forher_payroll_sales_data_search"/>
+        <field name="context">{'search_default_group_run': 1}</field>
+    </record>
+</odoo>

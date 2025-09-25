@@ -2,8 +2,9 @@ id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_hr_employee_board,HR Employee Board,model_hr_employee,forher_company_overview.forher_group_board,1,1,1,1
 access_hr_employee_branch_manager,HR Employee Branch Manager,model_hr_employee,forher_company_overview.forher_group_branch_manager,1,1,1,1
 access_hr_employee_accountant,HR Employee Accountant,model_hr_employee,forher_company_overview.forher_group_accountant,1,1,0,0
-access_hr_employee_employee,HR Employee Employee,model_hr_employee,forher_company_overview.forher_group_employee,1,1,0,0
+access_hr_employee_employee,HR Employee Employee,model_hr_employee,forher_company_overview.forher_group_employee,1,0,0,0
 access_hr_employee_admin,HR Employee Admin,model_hr_employee,base.group_system,1,1,1,1
+
 
 access_hr_employee_document_board,HR Employee Document Board,model_hr_employee_document,forher_company_overview.forher_group_board,1,1,1,1
 access_hr_employee_document_branch_manager,HR Employee Document Branch Manager,model_hr_employee_document,forher_company_overview.forher_group_branch_manager,1,1,1,1
