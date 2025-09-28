@@ -60,6 +60,7 @@ class HrAttendance(models.Model):
 
     is_holiday = fields.Boolean(string="Ngày lễ", compute="_compute_is_holiday", store=True)
     is_leave = fields.Boolean(string="Ngày nghỉ phép", compute="_compute_is_leave", store=True)
+    
 
     state = fields.Selection([
         ('draft', 'Nháp'),
@@ -121,11 +122,16 @@ class HrAttendance(models.Model):
         store=True
     )
 
+    ot_hours_normal = fields.Float(string="OT thường", compute="_compute_ot_hours", store=True)
+    ot_hours_holiday = fields.Float(string="OT ngày lễ", compute="_compute_ot_hours", store=True)
+    ot_hours_total = fields.Float(string="Tổng OT", compute="_compute_ot_hours", store=True)
+
     ot_done = fields.Float(
-        string="OT Done",
-        help="Số giờ OT thực tế",
-        default=0.0
-    )
+    string="OT Done",
+    help="Số giờ OT thực tế",
+    compute="_compute_ot_hours",
+    store=True,   
+)
 
     ot_balance = fields.Float(
         string="OT Balance",
@@ -133,20 +139,24 @@ class HrAttendance(models.Model):
         default=0.0
     )
 
-    @api.depends("check_in", "check_out", "employee_id")
+    @api.depends("check_in", "check_out", "employee_id", "is_holiday")
     def _compute_ot_hours(self):
         for rec in self:
+            rec.ot_hours_normal = 0.0
+            rec.ot_hours_holiday = 0.0
+            rec.ot_hours_total = 0.0
             rec.ot_done = 0.0
+
             if not rec.check_in or not rec.check_out or not rec.employee_id:
                 continue
 
-            # Lấy timezone
+            # timezone
             user_tz = pytz.timezone(self.env.user.tz or "UTC")
             local_in = rec.check_in.astimezone(user_tz)
             local_out = rec.check_out.astimezone(user_tz)
             d = local_in.date()
 
-            # Tìm phân ca
+            # Lấy ca làm
             assignment = self.env['forher.shift.assignment'].search([
                 ('employee_ids', 'in', rec.employee_id.id),
                 ('date', '=', d),
@@ -156,34 +166,65 @@ class HrAttendance(models.Model):
 
             shift = assignment.shift_id
 
-            # Chuyển float -> time
             def float_to_time(float_hour):
                 hour = int(float_hour)
                 minute = int((float_hour % 1) * 60)
                 return time(hour, minute)
 
             shift_start = float_to_time(shift.start_time)
-            shift_end   = float_to_time(shift.end_time)
+            shift_end = float_to_time(shift.end_time)
 
             planned_start = user_tz.localize(datetime.combine(d, shift_start))
-            planned_end   = user_tz.localize(datetime.combine(d, shift_end))
+            planned_end = user_tz.localize(datetime.combine(d, shift_end))
 
-            # OT trước ca
-            ot_before = (planned_start - local_in).total_seconds() / 3600 if local_in < planned_start else 0.0
-            # OT sau ca
-            ot_after = (local_out - planned_end).total_seconds() / 3600 if local_out > planned_end else 0.0
+            # Số giờ OT: chỉ tính sau ca
+            ot_hours = max(0.0, (local_out - planned_end).total_seconds() / 3600)
 
-            rec.ot_done = max(0.0, ot_before) + max(0.0, ot_after)
+            if rec.is_holiday:
+                rec.ot_hours_holiday = ot_hours
+            else:
+                rec.ot_hours_normal = ot_hours
+
+            rec.ot_hours_total = rec.ot_hours_normal + rec.ot_hours_holiday
+            rec.ot_done = rec.ot_hours_total
 
 
-    @api.depends('check_in', 'check_out')
+    
+    from datetime import datetime, time
+
+    @api.depends('check_in', 'check_out', 'employee_id')
     def _compute_worked_hours_float(self):
         for rec in self:
             if rec.check_in and rec.check_out:
-                delta = rec.check_out - rec.check_in
-                rec.worked_hours_float = delta.total_seconds() / 3600.0
+                assignment = self.env['forher.shift.assignment'].search([
+                    ('employee_ids', 'in', rec.employee_id.id),
+                    ('date', '=', rec.check_in.date())
+                ], limit=1)
+                if assignment and assignment.shift_id:
+                    user_tz = pytz.timezone(self.env.user.tz or "UTC")
+                    shift_start = assignment.shift_id.start_time
+                    shift_end = assignment.shift_id.end_time
+
+                    # Giờ bắt đầu/ kết thúc ca
+                    start_hour = int(shift_start)
+                    start_minute = int((shift_start % 1) * 60)
+                    end_hour = int(shift_end)
+                    end_minute = int((shift_end % 1) * 60)
+                    planned_start = user_tz.localize(datetime.combine(rec.check_in.date(), time(start_hour, start_minute)))
+                    planned_end = user_tz.localize(datetime.combine(rec.check_in.date(), time(end_hour, end_minute)))
+
+                    # Giờ làm thực tế trong ca (không vượt quá end ca)
+                    actual_start = max(planned_start, rec.check_in.astimezone(user_tz))
+                    actual_end = min(planned_end, rec.check_out.astimezone(user_tz))  # giới hạn tới end ca
+                    delta = actual_end - actual_start
+                    rec.worked_hours_float = max(delta.total_seconds() / 3600.0, 0.0)
+                else:
+                    # Không có ca, hiển thị full
+                    rec.worked_hours_float = (rec.check_out - rec.check_in).total_seconds() / 3600.0
             else:
                 rec.worked_hours_float = 0.0
+
+
 
     @api.depends('employee_id', 'check_in', 'check_out')
     def _compute_is_holiday(self):
@@ -251,33 +292,30 @@ class HrAttendance(models.Model):
                 })
                 return record
 
-        # --- 3. Logic công chuẩn / OT ---
-        if not record.attendance_type_id:
-            record._compute_late_early()
-
-            # Ưu tiên OT nếu đi trễ / về sớm
-            if record.is_late or record.is_early:
-                ot_type = self.env['forher.attendance.type'].search([('code', 'ilike', 'OT')], limit=1)
-                if not ot_type:
-                    ot_type = self.env['forher.attendance.type'].create({
-                        'name': 'Overtime',
-                        'code': 'OT',
-                        'unit': 'hour',
-                        'amount': 0.0
-                    })
-                record.attendance_type_id = ot_type.id
-            else:
-                # Nếu không trễ/sớm thì gán công chuẩn
-                chuan_type = self.env['forher.attendance.type'].search([('code', '=', 'CHUAN')], limit=1)
-                if not chuan_type:
-                    chuan_type = self.env['forher.attendance.type'].create({
-                        'name': 'Công chuẩn',
-                        'code': 'CHUAN',
-                        'unit': 'day',
-                        'amount': 0.0
-                    })
-                record.attendance_type_id = chuan_type.id
-
+        # --- 3. Logic công chuẩn / OT / Holiday ---
+        record._compute_late_early()
+        if record.is_holiday:
+            # Nếu là ngày lễ → set loại HOLIDAY
+            holiday_type = self.env['forher.attendance.type'].search([('code', '=', 'HOLIDAY')], limit=1)
+            if not holiday_type:
+                holiday_type = self.env['forher.attendance.type'].create({
+                    'name': 'Ngày lễ',
+                    'code': 'HOLIDAY',
+                    'unit': 'day',
+                    'amount': 0.0
+                })
+            record.attendance_type_id = holiday_type.id
+        else:
+            # Ngày thường → luôn set công chuẩn, đi trễ/về sớm không thay đổi
+            chuan_type = self.env['forher.attendance.type'].search([('code', '=', 'CHUAN')], limit=1)
+            if not chuan_type:
+                chuan_type = self.env['forher.attendance.type'].create({
+                    'name': 'Công chuẩn',
+                    'code': 'CHUAN',
+                    'unit': 'day',
+                    'amount': 0.0
+                })
+            record.attendance_type_id = chuan_type.id
 
 
         # --- 4. Tính tổng tiền ---
@@ -287,14 +325,13 @@ class HrAttendance(models.Model):
     @api.depends('check_in', 'check_out', 'attendance_type_id', 'ot_done')
     def _compute_total_amount(self):
         HOURLY_RATE = 27000
-        STANDARD_HOURS = 8  # 1 ngày chuẩn
         for rec in self:
             if rec.attendance_type_id:
                 worked_hours = rec.worked_hours_float or 0.0
 
                 if rec.attendance_type_id.code == 'CHUAN':
-                    # Công chuẩn: tối đa 8h
-                    rec.quantity = min(STANDARD_HOURS, worked_hours)
+                    # Công chuẩn: không giới hạn 8h
+                    rec.quantity = worked_hours
                     rec.total_amount = rec.quantity * HOURLY_RATE
                 elif rec.attendance_type_id.code == 'OT':
                     # OT: tính toàn bộ giờ thực tế + OT thêm
@@ -306,6 +343,26 @@ class HrAttendance(models.Model):
             else:
                 rec.quantity = 0.0
                 rec.total_amount = 0.0
+
+
+     # Số giờ chuẩn
+    worked_hours_display = fields.Float(
+        string='Giờ làm',
+        compute='_compute_hours',
+        store=True
+    )
+    # Số giờ OT
+    ot_hours_display = fields.Float(
+        string='Giờ OT',
+        compute='_compute_hours',
+        store=True
+    )
+
+    @api.depends('worked_hours_float', 'ot_done')
+    def _compute_hours(self):
+        for rec in self:
+            rec.worked_hours_display = rec.worked_hours_float or 0.0
+            rec.ot_hours_display = rec.ot_done or 0.0
 
     @api.constrains('check_in', 'employee_id')
     def _check_one_attendance_per_day_and_contract(self):

@@ -138,7 +138,7 @@
               name="Phân ca"
               parent="menu_forher_shift_root"
               action="action_forher_shift_assignment"
-              groups="forher_company_overview.forher_group_board,forher_company_overview.forher_group_branch_manager,base.group_system"/>
+              groups="forher_company_overview.forher_group_employee,forher_company_overview.forher_group_board,forher_company_overview.forher_group_branch_manager,base.group_system"/>
 
     <!-- Vi phạm -->
     <record id="action_forher_violation_record" model="ir.actions.act_window">

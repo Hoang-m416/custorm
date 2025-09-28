@@ -11,7 +11,12 @@ class Interview(models.Model):
     interview_date = fields.Datetime("Ngày giờ")
     location = fields.Char("Địa điểm")
     notes = fields.Text("Ghi chú")
-    result = fields.Selection([('pass','Đạt'),('fail','Không đạt')], string="Kết quả", readonly=True)
+    result = fields.Selection([
+    ('waiting', 'Đang đợi phỏng vấn'),
+    ('pass', 'Đạt'),
+    ('fail', 'Không đạt'),
+], string="Kết quả", default='waiting', readonly=True)
+
 
     progress = fields.Float("Tiến trình (%)", related='applicant_id.progress', readonly=True)
     state_label = fields.Char("Trạng thái hiển thị", related='applicant_id.state_label', readonly=True)
@@ -19,6 +24,21 @@ class Interview(models.Model):
     # Boolean fields để điều khiển hiển thị nút
     can_start_interview = fields.Boolean("Can Start Interview", compute='_compute_button_visibility')
     can_pass_fail = fields.Boolean("Can Pass/Fail", compute='_compute_button_visibility')
+
+    default_display_result = fields.Char(
+    string="Kết quả hiển thị",
+    compute="_compute_display_result",
+    store=False
+)
+
+    @api.depends('result')
+    def _compute_display_result(self):
+        for rec in self:
+            if rec.result:
+                rec.default_display_result = dict(self._fields['result'].selection).get(rec.result, '')
+            else:
+                rec.default_display_result = "Đang đợi phỏng vấn"
+
 
     @api.depends('applicant_state', 'result')
     def _compute_button_visibility(self):

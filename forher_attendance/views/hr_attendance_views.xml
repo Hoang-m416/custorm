@@ -27,7 +27,8 @@
                 <field name="is_early"/>
                 <field name="is_holiday"/>
                 <field name="quantity" string="Tổng giờ làm"/>
-                <field name="total_amount"/>
+                <field name="ot_hours_normal" string="OT thường"/>
+                <field name="ot_hours_holiday" string="OT ngày lễ"/>
                 <field name="state" widget="badge"
                        decoration-success="state == 'validated'"
                        decoration-warning="state == 'confirmed'"
@@ -114,8 +115,10 @@
         <xpath expr="//sheet/group[1]" position="after">
             <group string="Công &amp; Loại công">
                 <field name="attendance_type_id"/>
-                <field name="quantity" string="Tổng giờ làm"/>
-                <field name="total_amount"/>
+                <field name="worked_hours_float" string="Số giờ làm"/>
+                <field name="ot_hours_normal" string="OT thường"/>
+                <field name="ot_hours_holiday" string="OT ngày lễ"/>
+                <field name="quantity" string="Tổng công"/>
                 <field name="is_late"/>
                 <field name="is_early"/>
             </group>

@@ -160,6 +160,12 @@
                         <button name="action_reject" string="Từ chối" type="object" class="btn-danger btn-dynamic"
                                 invisible="state in ('hired','rejected','hire_confirmed','offer')"/>
                         
+                        <!-- Nút Xóa: chỉ hiện khi trạng thái là 'waiting' -->
+                        <button name="action_delete_waiting" string="Xóa" type="object"
+                                class="btn-danger btn-dynamic"
+                                confirm="Bạn có chắc chắn muốn xóa ứng viên này không?"
+                                invisible="state != 'waiting'"/>
+
                         <!-- Chỉ hiện khi trạng thái là 'hire_confirmed' -->
                         <button name="action_hire" string="Tạo Nhân viên" type="object" class="btn-success btn-dynamic"
                                 invisible="state != 'hire_confirmed'"/>

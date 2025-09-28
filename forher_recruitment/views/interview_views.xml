@@ -97,12 +97,10 @@
             <field name="arch" type="xml">
                 <form string="Lịch phỏng vấn">
                     <header>
-                        <field name="applicant_state" widget="statusbar"
-                            options="{'interview_scheduled':'secondary',
-                                        'interviewing':'info',
-                                        'interview_passed':'success',
-                                        'rejected':'danger'}" readonly="1"/>
-
+                        <field name="result" 
+                            widget="statusbar" 
+                            statusbar_visible="waiting,pass,fail" 
+                            readonly="1"/>
                         <button name="action_start_interview" string="Bắt đầu PV" type="object"
                                 class="btn-primary btn-dynamic"
                                 invisible="not can_start_interview"/>
@@ -146,19 +144,10 @@
                     <field name="interview_date"/>
                     <field name="location"/>
                     <field name="progress"/>
-                    <field name="applicant_state" widget="badge" readonly="1"
-                        options="{
-                            'secondary':'interview_scheduled',
-                            'info':'interviewing',
-                            'success':'interview_passed',
-                            'danger':'rejected',
-                            'primary':'offer',
-                            'warning':'pending_confirmation',
-                            'teal':'direct_hire',
-                            'primary':'hire_confirmed',
-                            'success':'hired',
-                            'darkblue':'waiting'
-                        }"/>
+                    <field name="result" widget="badge" readonly="1"
+       decoration-success="result == 'pass'"
+       decoration-danger="result == 'fail'"
+       decoration-warning="result == False"/>
                 </list>
             </field>
         </record>

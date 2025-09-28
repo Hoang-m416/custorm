@@ -12,19 +12,6 @@
         </field>
     </record>
 
-    <record id="view_forher_contract_tree_payroll" model="ir.ui.view">
-        <field name="name">forher.hr.contract.tree.payroll</field>
-        <field name="model">forher.hr.contract</field>
-        <field name="inherit_id" ref="forher_contract.forher_hr_contract_list_view"/>
-        <field name="arch" type="xml">
-            <xpath expr="//field[@name='wage']" position="after">
-                <field name="salary_structure_id" string="Cấu trúc lương"/>
-                <field name="position_allowance" string="Phụ cấp chức vụ"/>
-                <field name="job_allowance" string="Phụ cấp công việc"/>
-            </xpath>
-        </field>
-    </record>
-
     <record id="view_forher_payroll_sales_data_tree" model="ir.ui.view">
         <field name="name">forher.payroll.sales.data.tree</field>
         <field name="model">forher.payroll.sales.data</field>

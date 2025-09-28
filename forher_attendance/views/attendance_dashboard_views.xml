@@ -5,7 +5,7 @@
         <field name="name">attendance.dashboard.kanban</field>
         <field name="model">hr.employee</field>
         <field name="arch" type="xml">
-            <kanban class="o_kanban_mobile">
+            <kanban class="o_kanban_mobile" create="false">
                 <field name="name"/>
                 <field name="attendance_state"/>
                 <field name="last_attendance_id"/>
@@ -57,7 +57,7 @@
     <record id="action_attendance_dashboard" model="ir.actions.act_window">
         <field name="name">Dashboard Chấm công</field>
         <field name="res_model">hr.employee</field>
-        <field name="view_mode">kanban,list</field>
+        <field name="view_mode">list,kanban</field>
         <field name="view_id" ref="view_attendance_dashboard_kanban"/>
         <field name="domain">[('user_id', '=', uid)]</field>
         <field name="help" type="html">

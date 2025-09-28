@@ -1,6 +1,30 @@
 <odoo>
     <data noupdate="0">
 
+         <!-- Ẩn menu Departments -->
+        <record id="hr.menu_hr_department_kanban" model="ir.ui.menu">
+            <field name="active" eval="False"/>
+        </record>
+
+        <!-- Ẩn menu Reporting -->
+        <record id="hr.hr_menu_hr_reports" model="ir.ui.menu">
+            <field name="active" eval="False"/>
+        </record>
+
+        <!-- Ẩn menu Configuration -->
+        <record id="hr.menu_human_resources_configuration" model="ir.ui.menu">
+            <field name="active" eval="False"/>
+        </record>
+
+        <!-- Đổi tên Employees thành Nhân viên -->
+        <record id="hr.menu_hr_employee_payroll" model="ir.ui.menu">
+            <field name="name"> Nhân viên</field>
+        </record>
+
+        <record id="forher_hr_employee.forher_hr_menu_company" model="ir.ui.menu">
+            <field name="name">Chi nhánh</field>
+        </record>
+
         <!-- ================= Action Company ================= -->
         <record id="action_forher_company_kanban" model="ir.actions.act_window">
             <field name="name">Company</field>

@@ -54,7 +54,14 @@
                                     <field name="name"/>
                                     <field name="employee_id"/>
                                     <field name="total_net"/>
-                                    <field name="state"/>
+                                    <field name="state" 
+       statusbar_visible="draft,generated,computed,validated,done,cancelled"
+       decoration-badge-success="state=='done'"
+       decoration-badge-warning="state=='generated'"
+       decoration-badge-info="state=='computed'"
+       decoration-badge-primary="state=='validated'"
+       decoration-badge-secondary="state=='draft'"
+       decoration-badge-danger="state=='cancelled'"/>
                                 </list>
                             </field>
                         </page>

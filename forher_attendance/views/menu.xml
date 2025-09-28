@@ -34,7 +34,7 @@
               name="Lịch chấm công"
               parent="menu_forher_attendance_root"
               action="action_shift_assignment_calendar_manager"
-              groups="forher_company_overview.forher_group_board,forher_company_overview.forher_group_branch_manager,base.group_system"
+              groups="forher_company_overview.forher_group_employee,forher_company_overview.forher_group_board,forher_company_overview.forher_group_branch_manager,base.group_system"
               sequence="1"/>
 
     <!-- Dashboard cá nhân -->

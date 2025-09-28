@@ -31,10 +31,29 @@ class ForherPayslipRun(models.Model):
     @api.model
     def create(self, vals):
         if vals.get('name') in (False, '/', 'New'):
-            vals['name'] = self.env['ir.sequence'].next_by_code('forher.payslip.run') or 'New'
+            # prefix theo ngày bắt đầu nếu có
+            date_start = vals.get('date_start')
+            prefix = 'FORHER_PAY'
+            if date_start:
+                prefix += '_' + fields.Date.to_string(date_start).replace('-', '')
+
+            # tìm số cuối cùng
+            last_run = self.search([('name', 'like', prefix + '%')], order='id desc', limit=1)
+            last_number = 0
+            if last_run:
+                try:
+                    last_number = int(last_run.name.replace(prefix, ''))
+                except ValueError:
+                    last_number = 0
+
+            vals['name'] = f"{prefix}{last_number + 1:04d}"
+
         if not vals.get('company_id'):
             vals['company_id'] = self.env.company.id
+
         return super().create(vals)
+
+
 
     @api.depends('payslip_ids')
     def _compute_payslip_count(self):
@@ -82,6 +101,19 @@ class ForherPayslipRun(models.Model):
             if not run.date_start or not run.date_end:
                 raise UserError(_('Vui lòng chọn thời gian kỳ lương trước khi tạo phiếu lương.'))
 
+            # --- Đặt tên tự động nếu còn 'New' ---
+            if run.name in (False, '/', 'New'):
+                prefix = 'FORHER_PAY_' + fields.Date.to_string(run.date_start).replace('-', '')
+                last_run = self.search([('name', 'like', prefix + '%')], order='id desc', limit=1)
+                last_number = 0
+                if last_run:
+                    try:
+                        last_number = int(last_run.name.replace(prefix, ''))
+                    except ValueError:
+                        last_number = 0
+                run.name = f"{prefix}{last_number + 1:04d}"
+            # --------------------------------------
+
             contracts = Contract.search(run._get_contract_domain())
             if not contracts:
                 raise UserError(_('Không tìm thấy hợp đồng nhân viên hợp lệ cho kỳ lương này.'))
@@ -99,6 +131,7 @@ class ForherPayslipRun(models.Model):
             if run.state in ('draft', 'cancelled'):
                 run.state = 'generated'
         return True
+
 
     def action_compute(self):
         for run in self:

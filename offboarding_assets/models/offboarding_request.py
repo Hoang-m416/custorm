@@ -83,16 +83,13 @@ class ForherOffboardingAssets(models.Model):
         if self.line_ids:
             raise UserError(_("Danh mục tài sản đã tồn tại. Bạn có thể chỉnh sửa trực tiếp."))
 
-        equips = self.env["maintenance.equipment"].search([("employee_id", "=", self.employee_id.id)])
-        done_lines = self.env["forher.offboarding.asset.line"].search([
-            ("equipment_id", "in", equips.ids),
-            ("offboarding_id.state", "=", "done"),
+        # Lấy toàn bộ thiết bị hiện đang gắn cho nhân viên này
+        equips = self.env["maintenance.equipment"].search([
+            ("employee_id", "=", self.employee_id.id)
         ])
-        used_equips = done_lines.mapped("equipment_id").ids
-        available_equips = equips.filtered(lambda e: e.id not in used_equips)
 
         lines = []
-        for eq in available_equips:
+        for eq in equips:
             lines.append({
                 "equipment_id": eq.id,
                 "name": eq.name,
@@ -102,6 +99,7 @@ class ForherOffboardingAssets(models.Model):
             })
         self.write({"line_ids": [(0, 0, v) for v in lines]})
         return True
+
 
     # 2) Gửi thông báo
     def action_send_notification(self):
@@ -177,9 +175,19 @@ class ForherOffboardingAssets(models.Model):
             raise UserError(_("Cần đủ chữ ký của Nhân viên và Quản lý chi nhánh."))
         if self.issue_exists and not self.accounting_done:
             raise UserError(_("Cần Kế toán quyết toán bồi thường trước khi phê duyệt."))
+
+        # 1. Thu hồi thiết bị: xóa liên kết employee_id
+        if self.employee_id:
+            equips = self.env["maintenance.equipment"].search([("employee_id", "=", self.employee_id.id)])
+            if equips:
+                equips.sudo().write({"employee_id": False})
+            self.message_post(body=_("Đã thu hồi tất cả thiết bị khỏi nhân viên."))
+
+        # 2. Hoàn tất phiếu
         self.state = "done"
         self.message_post(body=_("Đã phê duyệt và hoàn tất thu hồi tài sản."))
 
+        # 3. Cập nhật trạng thái hợp đồng
         if self.contract_id and "state" in self.contract_id._fields:
             try:
                 self.contract_id.sudo().write({"state": "close"})
@@ -188,6 +196,7 @@ class ForherOffboardingAssets(models.Model):
                 )
             except Exception:
                 pass
+
 
     # 7) Hủy hồ sơ
     def action_cancel(self):

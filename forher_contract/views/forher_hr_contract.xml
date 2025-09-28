@@ -100,11 +100,12 @@
         <field name="arch" type="xml">
             <list string="Danh sách hợp đồng nhân sự">
                 <field name="name" string="Tên hợp đồng"/>
+                <field name="contract_type_id" string="Loại hợp đồng"/>
                 <field name="employee_id" string="Nhân viên"/>
                 <field name="job_id" string="Chức danh"/>
+                <field name="company_id" string="Chi nhánh" domain="[('parent_id','!=',False)]"/>
                 <field name="date_start" string="Ngày bắt đầu"/>
                 <field name="date_end" string="Ngày kết thúc"/>
-                <field name="wage" string="Lương"/>
                 <field name="state" string="Trạng thái" widget="badge" readonly="1"
                         options="{
                             'secondary': ['draft'],

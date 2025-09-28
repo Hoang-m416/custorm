@@ -37,7 +37,7 @@ class ForherPayslip(models.Model):
     employee_id = fields.Many2one('hr.employee', required=True, tracking=True)
     contract_id = fields.Many2one('forher.hr.contract', required=True, tracking=True)
     structure_id = fields.Many2one('forher.salary.structure', required=True, tracking=True)
-    run_id = fields.Many2one('forher.payslip.run', string='Payroll Batch', tracking=True, ondelete='set null')
+    run_id = fields.Many2one('forher.payslip.run', string='Payroll Batch', tracking=True, ondelete='cascade')
     date_from = fields.Date(required=True, tracking=True)
     date_to = fields.Date(required=True, tracking=True)
     state = fields.Selection([
@@ -62,8 +62,15 @@ class ForherPayslip(models.Model):
     auto_leave_day_count = fields.Float(string='Leave days (auto)', digits='Payroll', compute='_compute_attendance_metrics', store=True)
 
     leave_days = fields.Float(string='Paid leave days', default=0.0, help='Number of paid leave days to include in the payroll computation. Leave 0 to use automatic value.')
-    ot_normal_hours = fields.Float(string='OT hours (standard)', default=0.0, digits='Payroll')
-    ot_holiday_hours = fields.Float(string='OT hours (holiday)', default=0.0, digits='Payroll')
+    ot_normal_hours = fields.Float(
+    string='OT hours (standard)', digits='Payroll',
+    compute='_compute_ot_hours', store=True
+)
+    ot_holiday_hours = fields.Float(
+        string='OT hours (holiday)', digits='Payroll',
+        compute='_compute_ot_hours', store=True
+    )
+
     abc_rating = fields.Selection([
         ('A', 'A'),
         ('B', 'B'),
@@ -118,6 +125,7 @@ class ForherPayslip(models.Model):
                 slip.worked_hours_total = 0.0
                 slip.worked_day_count = 0.0
                 slip.auto_leave_day_count = 0.0
+                slip.leave_days = 4
                 continue
 
             Attendance = self.env['hr.attendance'].sudo()
@@ -142,15 +150,16 @@ class ForherPayslip(models.Model):
             total_days = len(attendance_days)
 
             # Ngày nghỉ tự động
-            leave_days = slip._get_attendance_summary().get('leave_days', 0.0)
+            auto_leave = slip._get_attendance_summary().get('leave_days', 0.0)
+
+            # Ngày nghỉ hợp lệ tính lương (tối đa 4 ngày)
+            leave_valid = min(auto_leave, 4)
 
             # Gán vào payslip
             slip.worked_hours_total = total_hours
             slip.worked_day_count = total_days
-            slip.auto_leave_day_count = leave_days
-
-
-
+            slip.auto_leave_day_count = auto_leave
+            slip.leave_days = 4
 
     @api.onchange('contract_id')
     def _onchange_contract_id(self):
@@ -328,7 +337,9 @@ class ForherPayslip(models.Model):
                 'records': self.env['hr.attendance'],
                 'total_hours': 0.0,
                 'total_days': 0.0,
-                'leave_days': 0.0
+                'leave_days': 0.0,
+                'ot_normal_hours': 0.0,
+                'ot_holiday_hours': 0.0,
             }
 
         # Chuyển ngày sang datetime để so sánh
@@ -348,9 +359,13 @@ class ForherPayslip(models.Model):
 
         # Số ngày có chấm công
         attendance_days = {
-            fields.Datetime.to_datetime(rec.check_in).date() 
+            fields.Datetime.to_datetime(rec.check_in).date()
             for rec in attendances if rec.check_in
         }
+
+        # --- Giờ OT ---
+        ot_normal = sum(attendances.mapped('ot_hours_normal'))
+        ot_holiday = sum(attendances.mapped('ot_hours_holiday'))
 
         # --- Tính ngày nghỉ phép ---
         leave_days = 0.0
@@ -361,7 +376,6 @@ class ForherPayslip(models.Model):
             ('start_date', '<=', self.date_to),
             ('end_date', '>=', self.date_from),
         ])
-
         for leave in leaves:
             start = max(leave.start_date, self.date_from)
             end = min(leave.end_date, self.date_to)
@@ -373,7 +387,6 @@ class ForherPayslip(models.Model):
             ('start_date', '<=', self.date_to),
             ('end_date', '>=', self.date_from),
         ])
-
         for holiday in holiday_leaves:
             start = max(holiday.start_date, self.date_from)
             end = min(holiday.end_date, self.date_to)
@@ -385,6 +398,8 @@ class ForherPayslip(models.Model):
             'total_hours': total_hours,
             'total_days': float(len(attendance_days)),
             'leave_days': leave_days,
+            'ot_normal_hours': ot_normal,
+            'ot_holiday_hours': ot_holiday,
         }
 
 
@@ -400,3 +415,11 @@ class ForherPayslip(models.Model):
             if self.date_to:
                 domain.append(('date', '<=', self.date_to))
         return SalesData.search(domain)
+    
+    @api.depends('employee_id', 'date_from', 'date_to')
+    def _compute_ot_hours(self):
+        for slip in self:
+            summary = slip._get_attendance_summary()
+            slip.ot_normal_hours = summary.get('ot_normal_hours', 0.0)
+            slip.ot_holiday_hours = summary.get('ot_holiday_hours', 0.0)
+

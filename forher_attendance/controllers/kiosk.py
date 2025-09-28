@@ -147,3 +147,9 @@ class ForherKioskController(http.Controller):
             'error': message,
             'employees': employees,
         })
+    
+    @http.route('/forher_attendance/kiosk/thank_you', type='http', auth='user', website=True, csrf=False)
+    def kiosk_thank_you(self, **kw):
+        """Trang cảm ơn sau khi chấm công"""
+        return request.render('forher_attendance.kiosk_thank_you')
+

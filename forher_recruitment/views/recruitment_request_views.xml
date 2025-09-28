@@ -112,13 +112,12 @@
                     <field name="number_of_positions"/>
                     <field name="salary_budget"/>
                     <field name="state" widget="badge" readonly="1"
-                        options="{
-                            'secondary': ['draft'],
-                            'info': ['submitted'],
-                            'primary': ['approved'],
-                            'success': ['completed'],
-                            'danger': ['rejected']
-                        }"/>
+       decoration-muted="state == 'draft'"
+       decoration-info="state == 'submitted'"
+       decoration-primary="state == 'approved'"
+       decoration-success="state == 'completed'"
+       decoration-danger="state == 'rejected'"/>
+
                 </list>
             </field>
         </record>

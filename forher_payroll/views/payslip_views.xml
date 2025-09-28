@@ -4,15 +4,20 @@
         <field name="model">forher.payslip</field>
         <field name="arch" type="xml">
             <list string="Phiếu lương">
-                <field name="name"/>
-                <field name="employee_id"/>
-                <field name="run_id"/>
-                <field name="date_from"/>
-                <field name="date_to"/>
-                <field name="total_gross"/>
-                <field name="total_deduction"/>
-                <field name="total_net"/>
-                <field name="state"/>
+                <field name="name" string="Mã phiếu lương"/>
+                <field name="employee_id" string="Nhân viên"/>
+                <field name="run_id" string="Kỳ lương"/>
+                <field name="date_from" string="Từ ngày"/>
+                <field name="date_to" string="Đến ngày"/>
+                <field name="total_gross" string="Tổng lương gộp"/>
+                <field name="total_deduction" string="Tổng khấu trừ"/>
+                <field name="total_net" string="Thực nhận"/>
+                <field name="state" string="Trạng thái" widget="badge" readonly="1"
+                    decoration-muted="state=='draft'"
+                    decoration-warning="state=='computed'"
+                    decoration-primary="state=='confirmed'"
+                    decoration-success="state=='done'"
+                    decoration-danger="state=='cancelled'"/>
             </list>
         </field>
     </record>
@@ -50,17 +55,17 @@
                     </group>
                     <group>
                         <group string="Thông số tính lương">
-                            <field name="leave_days"/>
-                            <field name="auto_leave_day_count" readonly="1"/>
-                            <field name="ot_normal_hours"/>
-                            <field name="ot_holiday_hours"/>
+                            <field name="leave_days" string="Số ngày nghỉ có lương"/>
+                            <field name="auto_leave_day_count" string="Số ngày nghỉ" readonly="1"/>
+                            <field name="ot_normal_hours" string="OT thường"/>
+                            <field name="ot_holiday_hours" string="OT ngày lễ"/>
                             <field name="abc_rating"/>
                         </group>
                         <group string="Doanh số và phụ trội">
                             <field name="sales_total_amount" readonly="1" string="Doanh số"/>
                             <field name="sales_products_count" readonly="1" string="Sản phẩm"/>
-                            <field name="advance_amount"/>
-                            <field name="penalty_amount"/>
+                            <field name="advance_amount" string="Ứng trước"/>
+                            <field name="penalty_amount" string="Phí phạt"/>
                         </group>
                     </group>
                     <separator string="Tổng hợp"/>
